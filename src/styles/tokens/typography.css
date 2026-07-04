@@ -5,6 +5,7 @@
   /* Title — semibold */
   --text-title-1: 64px;
   --text-title-2: 50px;
+  --text-title-3: 32px;
 
   /* Subtitle — semibold */
   --text-subtitle-1: 24px;
@@ -26,4 +27,9 @@
   /* Caption — regular */
   --text-caption-1: 15px;
   --text-caption-2: 13px;
+  --text-caption-3: 14px;
+
+  /* Login/Signup - title */
+  --text-panel-1: 28px;
+
 }
