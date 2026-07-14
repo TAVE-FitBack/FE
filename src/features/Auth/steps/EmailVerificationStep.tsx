@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Input } from '../../../components/common/input'
 import { StepProgress } from '../StepProgress'
+import { sendVerificationEmail } from '../../../api/auth'
+import { ApiError } from '../../../api/client'
+import { getVerificationToken } from '../../../api/verification'
 
 interface EmailVerificationStepProps {
   onNext: (email: string) => void
@@ -12,19 +15,32 @@ export function EmailVerificationStep({ onNext }: EmailVerificationStepProps) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
 
-  // 백엔드 이메일 인증 연동 전까지 임시로 API 호출 없이 무조건 통과시킴
   async function handleSend() {
     if (!email || sending) return
     setSending(true)
     setError('')
-    setSent(true)
-    setSending(false)
+    try {
+      await sendVerificationEmail(email)
+      setSent(true)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : '인증 메일 발송에 실패했습니다.')
+    } finally {
+      setSending(false)
+    }
   }
 
   function handleReset() {
     setEmail('')
     setSent(false)
     setError('')
+  }
+
+  function handleConfirm() {
+    if (!getVerificationToken()) {
+      setError('메일함의 인증 링크를 먼저 클릭해 주세요.')
+      return
+    }
+    onNext(email)
   }
 
   const active = sent || (email.length > 0 && !sending)
@@ -64,7 +80,7 @@ export function EmailVerificationStep({ onNext }: EmailVerificationStepProps) {
 
         <button
           type="button"
-          onClick={sent ? () => onNext(email) : handleSend}
+          onClick={sent ? handleConfirm : handleSend}
           disabled={!sent && (!email || sending)}
           className={`h-[52px] w-full rounded-full text-button-3 font-medium transition-colors disabled:cursor-not-allowed ${
             active ? 'bg-lime text-black' : 'bg-gray-500 text-gray-600'

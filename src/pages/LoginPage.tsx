@@ -2,6 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Input } from '../components/common/input'
 import { RightPanel } from '../features/Auth/RightPanel'
 import { SignupFlow } from '../features/Auth/SignupFlow'
+import { login } from '../api/auth'
+import { ApiError } from '../api/client'
 
 type Step = 'login' | 'signup'
 
@@ -40,12 +42,24 @@ function LoginPanel({
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [loginError, setLoginError] = useState('')
 
   const emailHasSpace = email.includes(' ')
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    onLogin()
+    if (submitting) return
+    setSubmitting(true)
+    setLoginError('')
+    try {
+      await login({ email, password })
+      onLogin()
+    } catch (err) {
+      setLoginError(err instanceof ApiError ? err.message : '로그인에 실패했습니다.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -106,11 +120,16 @@ function LoginPanel({
           </div>
         </div>
 
+        {loginError && (
+          <p className="pl-2 text-caption-3 leading-none text-error">{loginError}</p>
+        )}
+
         <button
           type="submit"
-          className="mt-2 h-[54px] w-full rounded-full bg-lime font-medium tracking-tight text-button-3 text-black"
+          disabled={submitting}
+          className="mt-2 h-[54px] w-full rounded-full bg-lime font-medium tracking-tight text-button-3 text-black disabled:cursor-not-allowed disabled:opacity-60"
         >
-          로그인
+          {submitting ? '로그인 중...' : '로그인'}
         </button>
       </form>
 

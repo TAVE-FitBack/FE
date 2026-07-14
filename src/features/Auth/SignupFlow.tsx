@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { RightPanel } from './RightPanel'
-import { TermsStep } from './steps/TermsStep'
+import { TermsStep, type TermsAgreements } from './steps/TermsStep'
 import { EmailVerificationStep } from './steps/EmailVerificationStep'
-import { InfoStep } from './steps/InfoStep'
+import { InfoStep, type SignupInfo } from './steps/InfoStep'
+import { signup } from '../../api/auth'
+import { getVerificationToken, clearVerificationToken } from '../../api/verification'
 
 type Step = 'terms' | 'email' | 'info'
 
@@ -12,6 +14,23 @@ interface SignupFlowProps {
 
 export function SignupFlow({ onBackToLogin }: SignupFlowProps) {
   const [step, setStep] = useState<Step>('terms')
+  const [agreements, setAgreements] = useState<TermsAgreements | null>(null)
+
+  async function handleInfoSubmit(info: SignupInfo) {
+    const token = getVerificationToken()
+    if (!token) throw new Error('이메일 인증이 만료되었습니다. 다시 인증해 주세요.')
+
+    await signup({
+      token,
+      nickname: info.nickname,
+      password: info.password,
+      passwordConfirm: info.passwordConfirm,
+      agreeTerms: agreements?.terms ?? false,
+      agreeMarketing: false,
+    })
+    clearVerificationToken()
+    onBackToLogin()
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-800">
@@ -22,11 +41,18 @@ export function SignupFlow({ onBackToLogin }: SignupFlowProps) {
             <p className="text-body-3 text-white/50">Fitback와 함께하는 스마트한 고객 관리의 시작</p>
           </div>
 
-          {step === 'terms' && <TermsStep onNext={() => setStep('email')} />}
+          {step === 'terms' && (
+            <TermsStep
+              onNext={(next) => {
+                setAgreements(next)
+                setStep('email')
+              }}
+            />
+          )}
 
           {step === 'email' && <EmailVerificationStep onNext={() => setStep('info')} />}
 
-          {step === 'info' && <InfoStep onNext={() => onBackToLogin()} />}
+          {step === 'info' && <InfoStep onNext={handleInfoSubmit} />}
         </div>
       </div>
 
