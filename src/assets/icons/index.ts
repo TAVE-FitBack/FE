@@ -1,3 +1,4 @@
+// 상단 6개 탭
 import icChartIdle from './ic-chart-idle.png'
 import icChartSelected from './ic-chart-selected.png'
 import icCommentIdle from './ic-comment-idle.png'
@@ -10,6 +11,11 @@ import icNoteIdle from './ic-note-idle.png'
 import icNoteSelected from './ic-note-selected.png'
 import icScheduleIdle from './ic-schedule-idle.png'
 import icScheduleSelected from './ic-schedule-selected.png'
+
+// 하단 3개 탭
+import icSettingsSelected from './ic-settings-selected.png'
+import icProfileSelected from './ic-profile-selected.png'
+import icLogoutSelected from './ic-logout-selected.png'
 
 export {
   icChartIdle,
@@ -24,4 +30,7 @@ export {
   icNoteSelected,
   icScheduleIdle,
   icScheduleSelected,
+  icSettingsSelected,
+  icProfileSelected,
+  icLogoutSelected,
 }

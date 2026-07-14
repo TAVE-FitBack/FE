@@ -3,6 +3,7 @@ import { Input } from './Input'
 
 export interface InputWithCheckProps extends InputHTMLAttributes<HTMLInputElement> {
   onCheck: () => void
+  checkDisabled?: boolean
   checkLabel?: string
   checkedLabel?: string
   status?: 'idle' | 'valid' | 'invalid'
@@ -12,14 +13,16 @@ export interface InputWithCheckProps extends InputHTMLAttributes<HTMLInputElemen
 
 export function InputWithCheck({
   onCheck,
+  checkDisabled = false,
   checkLabel = '중복확인',
   checkedLabel = '확인 완료',
   status = 'idle',
-  validMessage = '사용가능한 닉네임입니다.',
-  invalidMessage = '사용 중인 닉네임입니다.',
+  validMessage = '사용가능한 이름입니다.',
+  invalidMessage = '사용 중인 이름입니다.',
   ...props
 }: InputWithCheckProps) {
   const checked = status !== 'idle'
+  const canCheck = !checked && !checkDisabled
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -28,9 +31,9 @@ export function InputWithCheck({
         <button
           type="button"
           onClick={onCheck}
-          disabled={checked}
+          disabled={!canCheck}
           className={`h-[52px] w-[92px] shrink-0 rounded-full text-button-3 font-medium transition-colors disabled:cursor-not-allowed ${
-            checked ? 'bg-lime text-gray-750' : 'bg-gray-500 text-gray-600'
+            checked || canCheck ? 'bg-lime text-gray-750' : 'bg-gray-500 text-gray-600'
           }`}
         >
           {checked ? checkedLabel : checkLabel}

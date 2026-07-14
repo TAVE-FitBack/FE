@@ -4,7 +4,7 @@
 
 - **기준 캔버스**: 1440 × 1020px (모든 Figma 디자인 기준)
 - **fold 포인트**: `lg` (1024px) — 이 지점에서 레이아웃이 전환됨
-- **우측 사이드바**: 반응형 적용 제외 — 항상 현재 상태 유지
+- **우측 사이드바**: 반응형 적용 제외 — 여는 트리거가 없으면 기본적으로 닫힘(폭 0, 렌더 안 함). `isOpen` prop으로 제어(기본 `false`)
 - **전략**: mobile-first Tailwind 클래스 사용
 
 ### 브레이크포인트별 동작
@@ -12,9 +12,9 @@
 | 화면 | 좌측 사이드바 | 콘텐츠 영역 | 우측 사이드바 |
 |---|---|---|---|
 | `< lg` (< 1024px) | 드로어 오버레이 (기본 숨김) | 전체 너비, `p-4` | 변경 없음 |
-| `≥ lg` (≥ 1024px) | 항상 표시, 기본 `w-[72px]` → hover 시 `w-[240px]` | `lg:ml-[72px]`, `p-8` | 변경 없음 |
+| `≥ lg` (≥ 1024px) | 항상 표시, 기본 `w-[72px]` → 빈 공간 클릭 시 `w-[196px]`로 펼침(다시 클릭하면 닫힘) | `lg:ml-[72px]` ↔ `lg:ml-[196px]` (사이드바 펼침 상태에 반응), `p-8` | 변경 없음 |
 
-> 좌측 사이드바는 데스크톱에서 항상 아이콘만 보이는 72px 레일로 시작하고, `group-hover:`로 240px까지 확장됩니다. 콘텐츠 영역의 마진은 축소 상태 기준인 `lg:ml-[72px]`을 사용합니다 (`Sidebar.tsx`, `AppLayout.tsx` 참고).
+> 좌측 사이드바는 데스크톱에서 항상 아이콘만 보이는 72px 레일로 시작하고, 사이드바 영역(내비 버튼 제외) 클릭 시 196px로 펼쳐집니다(호버 아님 — `Sidebar.tsx`의 `expanded` state, 버튼 클릭은 `stopPropagation`으로 토글과 분리). 펼침 상태는 `onExpandedChange` 콜백으로 `AppLayout`에 전달되어, 콘텐츠 래퍼의 마진이 `lg:ml-[72px]` ↔ `lg:ml-[196px]`로 함께 전환됩니다(`transition-[margin] duration-300`으로 사이드바의 폭 전환과 동일한 타이밍) — 즉 사이드바가 펼쳐지면 본문이 겹치지 않고 밀려납니다.
 
 ### 반응형 클래스 작성 규칙
 
@@ -23,8 +23,8 @@
 className="p-4 lg:p-8"
 className="px-6 sm:px-[80px] lg:px-[120px]"
 
-// 사이드바 마진 (축소 상태 72px 기준)
-className="flex min-h-screen lg:ml-[72px]"
+// 사이드바 마진 (펼침 상태에 따라 72px ↔ 196px 반응)
+className={`flex min-h-screen transition-[margin] duration-300 ${expanded ? 'lg:ml-[196px]' : 'lg:ml-[72px]'}`}
 
 // 사이드바 노출 (트랜지션 포함)
 className="fixed ... -translate-x-full transition-transform duration-300 lg:translate-x-0"
@@ -247,7 +247,7 @@ src/
 ├── components/
 │   └── layout/
 │       ├── AppLayout.tsx    # 3열 레이아웃 래퍼
-│       ├── Sidebar.tsx      # 왼쪽 고정 내비게이션 (72px → hover 시 240px)
+│       ├── Sidebar.tsx      # 왼쪽 고정 내비게이션 (72px → 클릭 시 196px, onExpandedChange로 상위에 알림)
 │       ├── Header.tsx       # 상단 스티키 헤더 (72px)
 │       └── RightSidebar.tsx # 오른쪽 사이드바 (27.78vw)
 ├── pages/
@@ -276,7 +276,7 @@ src/
 
 - `Sidebar`: `fixed left-0 top-0 h-screen w-[72px] hover:w-[240px] overflow-x-hidden transition-[width] duration-300 bg-gray-800` (데스크톱), 모바일에서는 `-translate-x-full` / `lg:translate-x-0`으로 드로어 전환
 - `Header`: `sticky top-0 h-[72px] bg-gray-900/80 backdrop-blur-md`
-- `RightSidebar`: `sticky top-0 h-screen w-[calc(400/1440*100vw)] bg-gray-800` — props 없음, fold 전환 없이 화면 폭에 비례해 계속 스케일
+- `RightSidebar`: `sticky top-0 h-screen w-[calc(400/1440*100vw)] bg-gray-800` — `isOpen` prop(기본 `false`), false면 `null` 반환(공간 차지 안 함). fold 전환은 없고 열렸을 때는 화면 폭에 비례해 계속 스케일
 - 콘텐츠 래퍼: `lg:ml-[72px]` (축소된 Sidebar 폭 기준)
 - `body background`: `bg-gray-900`
 
