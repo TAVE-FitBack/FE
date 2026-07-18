@@ -19,7 +19,7 @@ export class ApiError extends Error {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
   auth?: boolean
   /** internal: prevents infinite refresh loops */
@@ -29,7 +29,8 @@ interface RequestOptions {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, auth = true, isRetry = false } = options
 
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const isFormData = body instanceof FormData
+  const headers: Record<string, string> = isFormData ? {} : { 'Content-Type': 'application/json' }
   if (auth) {
     const accessToken = getAccessToken()
     if (accessToken) headers.Authorization = `Bearer ${accessToken}`
@@ -38,13 +39,18 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body === undefined ? undefined : isFormData ? (body as FormData) : JSON.stringify(body),
   })
 
   if (res.status === 401 && auth && !isRetry && getRefreshToken()) {
     const refreshed = await tryRefresh()
     if (refreshed) return request<T>(path, { ...options, isRetry: true })
     clearTokens()
+  }
+
+  if (res.status === 204) {
+    if (!res.ok) throw new ApiError('요청에 실패했습니다.', String(res.status))
+    return undefined as T
   }
 
   const json = (await res.json().catch(() => null)) as ApiResponse<T> | null

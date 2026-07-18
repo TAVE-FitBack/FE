@@ -1,3 +1,4 @@
+import { type MouseEvent, useState } from 'react'
 import {
   icChartIdle,
   icChartSelected,
@@ -22,6 +23,7 @@ interface SidebarProps {
   onNavigate: (page: Page) => void
   isOpen?: boolean
   onLogout?: () => void
+  onExpandedChange?: (expanded: boolean) => void
 }
 
 const NAV_ITEMS: { page: Page; idle: string; selected: string; label: string }[] = [
@@ -33,25 +35,36 @@ const NAV_ITEMS: { page: Page; idle: string; selected: string; label: string }[]
   { page: 'tasks',     idle: icNoteIdle,     selected: icNoteSelected,     label: '할일목록' },
 ]
 
-export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout }: SidebarProps) {
+export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout, onExpandedChange }: SidebarProps) {
+  const [expanded, setExpanded] = useState(false)
+
+  function toggleExpanded() {
+    setExpanded((v) => {
+      const next = !v
+      onExpandedChange?.(next)
+      return next
+    })
+  }
+
+  function stopToggle(e: MouseEvent) {
+    e.stopPropagation()
+  }
+
   return (
     <aside
-      className={`group fixed left-0 top-0 z-30 flex h-screen flex-col bg-gray-800
-        overflow-x-hidden transition-[width] duration-300 w-[72px] hover:w-[240px]
+      onClick={toggleExpanded}
+      className={`fixed left-0 top-0 z-30 flex h-screen cursor-pointer flex-col bg-gray-800
+        overflow-x-hidden transition-[width] duration-300 ${expanded ? 'w-[196px]' : 'w-[72px]'}
         lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
     >
       {/* Logo */}
-      <div className="flex h-[84px] shrink-0 items-center justify-center px-4 transition-all duration-300 group-hover:justify-start group-hover:px-6">
-        <img
-          src={logoIconUrl}
-          alt="Fitback"
-          className="h-[22px] w-auto shrink-0 group-hover:hidden"
-        />
-        <img
-          src={logoUrl}
-          alt="Fitback"
-          className="hidden h-[22px] w-auto shrink-0 group-hover:block"
-        />
+      <div
+        className={`flex h-[84px] shrink-0 items-center transition-all duration-300 ${
+          expanded ? 'justify-start px-6' : 'justify-center px-4'
+        }`}
+      >
+        <img src={logoIconUrl} alt="Fitback" className={`h-[22px] w-auto shrink-0 ${expanded ? 'hidden' : ''}`} />
+        <img src={logoUrl} alt="Fitback" className={`h-[22px] w-auto shrink-0 ${expanded ? '' : 'hidden'}`} />
       </div>
 
       {/* Nav */}
@@ -61,18 +74,16 @@ export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout }: Si
           return (
             <button
               key={page}
-              onClick={() => onNavigate(page)}
-              className={`flex w-full items-center gap-3 rounded-full px-4 py-3 tracking-tight transition-colors
-                justify-center group-hover:justify-start ${
-                isActive
-                  ? 'bg-lime/10 text-lime'
-                  : 'text-gray-400 hover:bg-white/5'
-              }`}
+              onClick={(e) => {
+                stopToggle(e)
+                onNavigate(page)
+              }}
+              className={`flex w-full items-center gap-3 rounded-full px-4 py-3 tracking-tight transition-colors ${
+                expanded ? 'justify-start' : 'justify-center'
+              } ${isActive ? 'bg-lime/10 text-lime' : 'text-gray-400 hover:bg-white/5'}`}
             >
-              <img src={isActive ? selected : idle} alt="" aria-hidden className="h-6 w-6 shrink-0" />
-              <span className="whitespace-nowrap text-body-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                {label}
-              </span>
+              <img src={isActive ? selected : idle} alt="" aria-hidden className="h-5 w-5 shrink-0" />
+              {expanded && <span className="whitespace-nowrap text-body-3">{label}</span>}
             </button>
           )
         })}
@@ -81,31 +92,39 @@ export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout }: Si
       {/* Bottom */}
       <div className="shrink-0 border-t border-gray-600 px-3 pb-3 pt-3">
         {/* 설정 */}
-        <button className="flex w-full items-center gap-3 rounded-full px-4 py-3 text-gray-400 transition-colors hover:bg-white/5 justify-center group-hover:justify-start">
-          <span className="h-6 w-6 shrink-0" />
-          <span className="whitespace-nowrap text-caption-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            설정
-          </span>
+        <button
+          onClick={stopToggle}
+          className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-gray-400 transition-colors hover:bg-white/5 ${
+            expanded ? 'justify-start' : 'justify-center'
+          }`}
+        >
+          <span className="h-5 w-5 shrink-0" />
+          {expanded && <span className="whitespace-nowrap text-caption-1">설정</span>}
         </button>
 
         {/* Profile */}
-        <div className="flex items-center gap-3 px-4 py-2 justify-center group-hover:justify-start">
-          <span className="h-6 w-6 shrink-0" />
-          <div className="flex flex-col gap-0.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            <span className="whitespace-nowrap text-caption-2 font-medium text-gray-400">관리자</span>
-            <span className="whitespace-nowrap font-en text-caption-2 leading-none text-gray-400">Sales Admin</span>
-          </div>
+        <div className={`flex items-center gap-3 px-4 py-2 ${expanded ? 'justify-start' : 'justify-center'}`}>
+          <span className="h-5 w-5 shrink-0" />
+          {expanded && (
+            <div className="flex flex-col gap-0.5">
+              <span className="whitespace-nowrap text-caption-2 font-medium text-gray-400">관리자</span>
+              <span className="whitespace-nowrap font-en text-caption-2 leading-none text-gray-400">Sales Admin</span>
+            </div>
+          )}
         </div>
 
         {/* 로그아웃 */}
         <button
-          onClick={onLogout}
-          className="flex w-full items-center gap-3 rounded-full px-4 py-3 text-gray-400 transition-colors hover:bg-white/5 justify-center group-hover:justify-start"
+          onClick={(e) => {
+            stopToggle(e)
+            onLogout?.()
+          }}
+          className={`flex w-full items-center gap-3 rounded-full px-4 py-3 text-gray-400 transition-colors hover:bg-white/5 ${
+            expanded ? 'justify-start' : 'justify-center'
+          }`}
         >
-          <span className="h-6 w-6 shrink-0" />
-          <span className="whitespace-nowrap text-caption-1 font-medium opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            로그아웃
-          </span>
+          <span className="h-5 w-5 shrink-0" />
+          {expanded && <span className="whitespace-nowrap text-caption-1 font-medium">로그아웃</span>}
         </button>
       </div>
     </aside>
