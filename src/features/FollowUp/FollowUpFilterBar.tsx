@@ -1,20 +1,23 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useDropdown } from '../Clients/registrationFormControls'
-import { GENDER_OPTIONS, REASON_OPTIONS, SERVICE_OPTIONS, STATUS_OPTIONS, TEMPERATURE_OPTIONS, type Gender, type LeadTemperature } from './data'
+import type { CustomerStatus, Gender } from '../../api/customerManagement'
+import { GENDER_LABEL, GENDER_OPTIONS, STATUS_OPTIONS, TEMPERATURE_OPTIONS, CUSTOMER_STATUS_LABEL } from './data'
 
 export interface FollowUpFilters {
   keyword?: string
   gender?: Gender
   service?: string
   reason?: string
-  status?: string
-  temperature?: LeadTemperature
+  status?: CustomerStatus
+  temperature?: string
 }
 
 interface FollowUpFilterBarProps {
   filters: FollowUpFilters
   onFiltersChange: (filters: FollowUpFilters) => void
+  serviceOptions: string[]
+  reasonOptions: string[]
 }
 
 function SearchIcon() {
@@ -39,11 +42,13 @@ function FilterDropdown<T extends string>({
   value,
   options,
   onChange,
+  getLabel = (o: T) => o,
 }: {
   label: string
   value: T | ''
   options: T[]
   onChange: (value: T | '') => void
+  getLabel?: (option: T) => string
 }) {
   const { open, setOpen, triggerRef, menuRef, rect } = useDropdown()
   const isActive = value !== ''
@@ -62,7 +67,7 @@ function FilterDropdown<T extends string>({
           isActive ? 'border border-lime text-lime' : 'border border-transparent text-gray-500 hover:text-gray-300'
         }`}
       >
-        {isActive ? value : label}
+        {isActive ? getLabel(value) : label}
         <ChevronDownIcon />
       </button>
 
@@ -85,7 +90,7 @@ function FilterDropdown<T extends string>({
                     value === o ? 'bg-gray-700/50' : 'hover:bg-gray-700/50'
                   }`}
                 >
-                  {o}
+                  {getLabel(o)}
                 </button>
               ))}
             </div>
@@ -96,7 +101,7 @@ function FilterDropdown<T extends string>({
   )
 }
 
-export function FollowUpFilterBar({ filters, onFiltersChange }: FollowUpFilterBarProps) {
+export function FollowUpFilterBar({ filters, onFiltersChange, serviceOptions, reasonOptions }: FollowUpFilterBarProps) {
   const [keywordInput, setKeywordInput] = useState(filters.keyword ?? '')
 
   function set<K extends keyof FollowUpFilters>(key: K, value: FollowUpFilters[K]) {
@@ -131,10 +136,22 @@ export function FollowUpFilterBar({ filters, onFiltersChange }: FollowUpFilterBa
 
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex flex-wrap items-center gap-2">
-          <FilterDropdown label="성별" value={filters.gender ?? ''} options={GENDER_OPTIONS} onChange={(v) => set('gender', v || undefined)} />
-          <FilterDropdown label="종목" value={filters.service ?? ''} options={SERVICE_OPTIONS} onChange={(v) => set('service', v || undefined)} />
-          <FilterDropdown label="미등록 사유" value={filters.reason ?? ''} options={REASON_OPTIONS} onChange={(v) => set('reason', v || undefined)} />
-          <FilterDropdown label="상태" value={filters.status ?? ''} options={STATUS_OPTIONS} onChange={(v) => set('status', v || undefined)} />
+          <FilterDropdown
+            label="성별"
+            value={filters.gender ?? ''}
+            options={GENDER_OPTIONS}
+            getLabel={(o) => GENDER_LABEL[o]}
+            onChange={(v) => set('gender', v || undefined)}
+          />
+          <FilterDropdown label="종목" value={filters.service ?? ''} options={serviceOptions} onChange={(v) => set('service', v || undefined)} />
+          <FilterDropdown label="미등록 사유" value={filters.reason ?? ''} options={reasonOptions} onChange={(v) => set('reason', v || undefined)} />
+          <FilterDropdown
+            label="상태"
+            value={filters.status ?? ''}
+            options={STATUS_OPTIONS}
+            getLabel={(o) => CUSTOMER_STATUS_LABEL[o]}
+            onChange={(v) => set('status', v || undefined)}
+          />
           <FilterDropdown
             label="고객 온도"
             value={filters.temperature ?? ''}

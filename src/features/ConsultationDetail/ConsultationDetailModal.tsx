@@ -205,13 +205,31 @@ export function ConsultationDetailModal({ customerId, initialStatus, onClose, on
 
             <div className="flex items-center justify-between border-b border-gray-700">
               <div className="flex items-center gap-2">
-                <TabButton active={tab === 'analysis'} onClick={() => setTab('analysis')}>
+                <TabButton
+                  active={tab === 'analysis'}
+                  onClick={() => {
+                    setTab('analysis')
+                    loadDetail()
+                  }}
+                >
                   AI 상담분석
                 </TabButton>
-                <TabButton active={tab === 'timeline'} onClick={() => setTab('timeline')}>
+                <TabButton
+                  active={tab === 'timeline'}
+                  onClick={() => {
+                    setTab('timeline')
+                    loadDetail()
+                  }}
+                >
                   활동 타임라인
                 </TabButton>
-                <TabButton active={tab === 'memo'} onClick={() => setTab('memo')}>
+                <TabButton
+                  active={tab === 'memo'}
+                  onClick={() => {
+                    setTab('memo')
+                    loadDetail()
+                  }}
+                >
                   상담메모
                 </TabButton>
               </div>
@@ -238,7 +256,16 @@ export function ConsultationDetailModal({ customerId, initialStatus, onClose, on
                   onNextActionRegenerated={loadDetail}
                 />
               )}
-              {tab === 'timeline' && <ActivityTimelineTab customerId={customerId} detail={detail} onUpdated={loadDetail} />}
+              {tab === 'timeline' && (
+                <ActivityTimelineTab
+                  customerId={customerId}
+                  detail={detail}
+                  onUpdated={() => {
+                    loadDetail()
+                    onUpdated()
+                  }}
+                />
+              )}
               {tab === 'memo' && (
                 <ConsultationMemoTab
                   customerId={customerId}
@@ -269,7 +296,10 @@ export function ConsultationDetailModal({ customerId, initialStatus, onClose, on
               preferredContactChannel: detail.customer.preferredContactChannel,
               visitedAt: detail.latestConsultation?.consultedAt ?? '',
             }}
-            onClose={() => setEditOpen(false)}
+            onClose={() => {
+              setEditOpen(false)
+              loadDetail()
+            }}
             onSaved={() => {
               setEditOpen(false)
               loadDetail()

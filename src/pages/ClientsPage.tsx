@@ -265,7 +265,10 @@ export function ClientsPage() {
         <ConsultationDetailModal
           customerId={detailCustomer.id}
           initialStatus={detailCustomer.status}
-          onClose={() => setDetailCustomer(null)}
+          onClose={() => {
+            setDetailCustomer(null)
+            bumpRefresh()
+          }}
           onUpdated={bumpRefresh}
         />
       )}
@@ -273,14 +276,20 @@ export function ClientsPage() {
       <NewConsultationModal
         key={`consult-${newEntryKey}`}
         open={isNewEntryOpen && tab === 'consult'}
-        onClose={() => setIsNewEntryOpen(false)}
+        onClose={() => {
+          setIsNewEntryOpen(false)
+          bumpRefresh()
+        }}
         onCreated={bumpRefresh}
         filterOptions={consultOptions}
       />
       <NewInquiryModal
         key={`inquiry-${newEntryKey}`}
         open={isNewEntryOpen && tab === 'inquiry'}
-        onClose={() => setIsNewEntryOpen(false)}
+        onClose={() => {
+          setIsNewEntryOpen(false)
+          bumpRefresh()
+        }}
         onCreated={bumpRefresh}
         filterOptions={inquiryOptions}
       />
