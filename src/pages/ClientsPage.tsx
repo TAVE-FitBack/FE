@@ -33,6 +33,11 @@ function formatMonth(monthIndex: number): string {
   return `${year}-${String(month).padStart(2, '0')}`
 }
 
+function currentMonthIndex(): number {
+  const now = new Date()
+  return (now.getFullYear() - 2026) * 12 + now.getMonth()
+}
+
 function MonthNav({ monthIndex, onChange }: { monthIndex: number; onChange: (next: number) => void }) {
   const year = 2026 + Math.floor(monthIndex / 12)
   const month = (monthIndex % 12) + 1
@@ -83,10 +88,11 @@ const EMPTY_FILTERS: ClientFilters = {}
 
 export function ClientsPage() {
   const [tab, setTab] = useState<ClientTab>('consult')
-  const [monthIndex, setMonthIndex] = useState(9)
+  const [monthIndex, setMonthIndex] = useState(currentMonthIndex)
   const [filters, setFilters] = useState<ClientFilters>(EMPTY_FILTERS)
   const [page, setPage] = useState(0)
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false)
+  const [newEntryKey, setNewEntryKey] = useState(0)
   const [refreshToken, setRefreshToken] = useState(0)
 
   const [summary, setSummary] = useState<CustomerManagementSummaryResponse | null>(null)
@@ -224,7 +230,10 @@ export function ClientsPage() {
 
         <button
           type="button"
-          onClick={() => setIsNewEntryOpen(true)}
+          onClick={() => {
+            setNewEntryKey((k) => k + 1)
+            setIsNewEntryOpen(true)
+          }}
           className="flex h-9 items-center gap-2 rounded-full bg-lime px-5 text-button-3 font-medium text-gray-800"
         >
           <PlusIcon />
@@ -249,12 +258,14 @@ export function ClientsPage() {
       />
 
       <NewConsultationModal
+        key={`consult-${newEntryKey}`}
         open={isNewEntryOpen && tab === 'consult'}
         onClose={() => setIsNewEntryOpen(false)}
         onCreated={bumpRefresh}
         filterOptions={consultOptions}
       />
       <NewInquiryModal
+        key={`inquiry-${newEntryKey}`}
         open={isNewEntryOpen && tab === 'inquiry'}
         onClose={() => setIsNewEntryOpen(false)}
         onCreated={bumpRefresh}

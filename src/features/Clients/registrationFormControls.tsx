@@ -230,6 +230,12 @@ function CalendarPanel({
   )
 }
 
+function formatBirthDateDigits(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8)
+  const parts = [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)].filter(Boolean)
+  return parts.join('-')
+}
+
 export function DateField({
   value,
   onChange,
@@ -243,39 +249,18 @@ export function DateField({
   paddingClassName?: string
   tone?: 'default' | 'flat'
 }) {
-  const { open, setOpen, triggerRef, menuRef, rect } = useDropdown()
-  const [viewDate, setViewDate] = useState(() => (value ? new Date(value) : new Date()))
   const triggerToneClass = tone === 'flat' ? 'bg-gray-750' : 'border border-gray-700 bg-gray-900'
 
   return (
-    <div ref={triggerRef} className={`relative ${className}`}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center gap-2 rounded-full ${triggerToneClass} ${paddingClassName} py-[11px] text-body-3 outline-none`}
-      >
-        <CalendarIcon className="shrink-0 text-gray-500" />
-        <span className={value ? 'text-gray-100' : 'text-gray-600'}>{value || 'YYYY-MM-DD'}</span>
-      </button>
-
-      {open &&
-        rect &&
-        createPortal(
-          <div ref={menuRef} data-popover-portal style={{ position: 'fixed', top: rect.top, left: rect.left }} className="z-[90]">
-            <CalendarPanel
-              value={value}
-              viewDate={viewDate}
-              onViewDateChange={setViewDate}
-              onSelect={(d) => {
-                onChange(d)
-                setOpen(false)
-              }}
-              tone={tone}
-            />
-          </div>,
-          document.body,
-        )}
-    </div>
+    <input
+      type="text"
+      inputMode="numeric"
+      value={value}
+      onChange={(e) => onChange(formatBirthDateDigits(e.target.value))}
+      placeholder="YYYYMMDD"
+      maxLength={10}
+      className={`w-full rounded-full ${triggerToneClass} ${paddingClassName} py-[11px] text-body-3 text-gray-100 outline-none placeholder:text-gray-600 focus:border-lime ${className}`}
+    />
   )
 }
 
