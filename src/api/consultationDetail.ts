@@ -226,6 +226,24 @@ export function generateMessageDraft(
   return request<MessageTemplateCreateResponse>(`/api/customers/${customerId}/message-templates`, { method: 'POST', body: req })
 }
 
+// ---- POST /api/message-templates/{messageTemplateId}/mark-sent ----
+
+export interface MessageTemplateMarkSentResponse {
+  messageTemplateId: string
+  deliveryStatus: 'DRAFT' | 'SENT'
+  sentAt: string
+  followUpId: string
+  followUpStatus: FollowUpStatus
+  contactRound: number
+}
+
+export function markMessageTemplateSent(messageTemplateId: string, sentAt?: string): Promise<MessageTemplateMarkSentResponse> {
+  return request<MessageTemplateMarkSentResponse>(`/api/message-templates/${messageTemplateId}/mark-sent`, {
+    method: 'POST',
+    body: sentAt ? { sentAt } : {},
+  })
+}
+
 // ---- POST /api/customers/{customerId}/consultations (재상담 등록) ----
 
 export interface ReconsultationInfo {

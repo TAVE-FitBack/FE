@@ -151,7 +151,10 @@ export function ActivityTimelineTab({ customerId, detail, onUpdated }: ActivityT
           initialLeadTemperature={detail.aiInsight?.leadTemperature ?? ''}
           initialTemperatureBasis={detail.aiInsight?.temperatureBasis ?? ''}
           nonConversionReasons={detail.nonConversionReasons}
-          onClose={() => setEditOpen(false)}
+          onClose={() => {
+            setEditOpen(false)
+            onUpdated()
+          }}
           onSaved={() => {
             setEditOpen(false)
             onUpdated()

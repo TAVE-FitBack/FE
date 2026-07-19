@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
-import type { FollowUpContact, ManagementStage } from './data'
-import { ReasonTags, RegistrationStatusBadge, TemperatureBadge } from './badges'
+import type { FollowUpEndedItem } from '../../api/followUps'
+import { CUSTOMER_STATUS_LABEL, GENDER_SHORT } from './data'
+import { ReasonTags, RegistrationStatusBadge } from './badges'
 
 interface ContactTableProps {
-  contacts: FollowUpContact[]
+  contacts: FollowUpEndedItem[]
 }
 
 const COL_WIDTHS = [40, 61, 124, 61, 87, 152, undefined, 149, 95, 95, 60, 44]
@@ -61,9 +62,7 @@ function MoreMenuButton() {
   )
 }
 
-const GENDER_LABEL: Record<'여성' | '남성', string> = { 여성: '여', 남성: '남' }
-
-function StageIndicator({ stage }: { stage: ManagementStage }) {
+function StageIndicator({ stage }: { stage: 1 | 2 | 3 }) {
   return (
     <div className="flex w-fit items-center rounded-full bg-gray-900 p-1">
       {[1, 2, 3].map((n) => (
@@ -118,35 +117,32 @@ export function ContactTable({ contacts }: ContactTableProps) {
             </tr>
           )}
           {contacts.map((c) => (
-            <tr key={c.id} className="border-b border-gray-800 last:border-b-0 hover:bg-gray-800/40">
+            <tr key={c.followUpId} className="border-b border-gray-800 last:border-b-0 hover:bg-gray-800/40">
               <Cell>
                 <RowCheckbox />
               </Cell>
               <Cell>
-                <div className="flex flex-col items-start gap-1">
-                  <TemperatureBadge temperature={c.temperature} />
-                  <span className="truncate text-gray-300">{c.name}</span>
-                </div>
+                <span className="truncate text-gray-300">{c.customerName}</span>
               </Cell>
               <Cell className="truncate text-gray-400">
-                {c.phone} · {GENDER_LABEL[c.gender]}
+                {c.phoneNum} · {GENDER_SHORT[c.gender]}
               </Cell>
-              <Cell className="truncate">{c.service}</Cell>
-              <Cell className="truncate text-gray-400">{c.visitPath}</Cell>
+              <Cell className="truncate">{c.serviceName}</Cell>
+              <Cell className="truncate text-gray-400">-</Cell>
               <Cell>
-                <StageIndicator stage={c.stage} />
+                <StageIndicator stage={c.contactRound as 1 | 2 | 3} />
               </Cell>
               <Cell>
                 <span className="line-clamp-2 text-caption-3 text-gray-400">{c.memo}</span>
               </Cell>
               <Cell>
-                <ReasonTags reasons={c.reasons} />
+                <ReasonTags reasons={c.nonConversionReasons.map((r) => r.reasonType)} />
               </Cell>
               <Cell>
-                <RegistrationStatusBadge label={c.registrationStatus} />
+                <RegistrationStatusBadge label={CUSTOMER_STATUS_LABEL[c.customerStatus]} />
               </Cell>
-              <Cell className="truncate text-gray-400">{c.visitDate}</Cell>
-              <Cell className="truncate text-gray-400">{c.manager}</Cell>
+              <Cell className="truncate text-gray-400">-</Cell>
+              <Cell className="truncate text-gray-400">-</Cell>
               <Cell>
                 <MoreMenuButton />
               </Cell>

@@ -1,16 +1,15 @@
-import type { LeadTemperature } from './data'
-
-const TEMPERATURE_STYLE: Record<LeadTemperature, string> = {
+const TEMPERATURE_STYLE: Record<string, string> = {
   HOT: 'bg-coral/10 text-coral',
   WARM: 'bg-coral-light/20 text-coral-light',
   HOLD: 'bg-lime-light/10 text-lime-light',
   COLD: 'bg-blue-light/20 text-blue-light',
   LOST: 'bg-gray-400/10 text-gray-400',
 }
+const TEMPERATURE_FALLBACK_STYLE = 'bg-gray-400/10 text-gray-400'
 
-export function TemperatureBadge({ temperature }: { temperature: LeadTemperature }) {
+export function TemperatureBadge({ temperature }: { temperature: string }) {
   return (
-    <span className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] leading-none ${TEMPERATURE_STYLE[temperature]}`}>
+    <span className={`inline-flex items-center rounded px-2 py-0.5 text-[11px] leading-none ${TEMPERATURE_STYLE[temperature] ?? TEMPERATURE_FALLBACK_STYLE}`}>
       {temperature}
     </span>
   )
