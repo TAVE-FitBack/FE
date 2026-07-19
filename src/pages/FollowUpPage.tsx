@@ -16,7 +16,6 @@ import {
   type FollowUpEndedListResponse,
   type FollowUpEndedItem,
 } from '../api/followUps'
-import { markMessageTemplateSent } from '../api/consultationDetail'
 import { ApiError } from '../api/client'
 import { ConsultationDetailModal } from '../features/ConsultationDetail/ConsultationDetailModal'
 
@@ -152,12 +151,6 @@ export function FollowUpPage() {
       .catch((e: unknown) => setError(e instanceof ApiError ? e.message : '답장 유무 변경에 실패했습니다.'))
   }
 
-  function handleMarkSent(messageTemplateId: string) {
-    markMessageTemplateSent(messageTemplateId)
-      .then(() => setRefreshToken((v) => v + 1))
-      .catch((e: unknown) => setError(e instanceof ApiError ? e.message : '전송 완료 처리에 실패했습니다.'))
-  }
-
   function handleOpenDetail(customerId: string, customerStatus: FollowUpBoardItem['customerStatus']) {
     setDetailCustomer({ id: customerId, status: customerStatus })
   }
@@ -208,12 +201,7 @@ export function FollowUpPage() {
       {tab === 'ended' ? (
         <ContactTable contacts={filteredEnded} />
       ) : (
-        <FollowUpBoard
-          columns={filteredColumns}
-          onMarkReplied={handleMarkReplied}
-          onMarkSent={handleMarkSent}
-          onOpenDetail={handleOpenDetail}
-        />
+        <FollowUpBoard columns={filteredColumns} onMarkReplied={handleMarkReplied} onOpenDetail={handleOpenDetail} />
       )}
 
       {detailCustomer && (

@@ -11,7 +11,7 @@ export const STATUS_OPTIONS: CustomerStatus[] = ['REGISTERED', 'PENDING', 'SCHED
 export const CUSTOMER_STATUS_LABEL: Record<CustomerStatus, string> = {
   REGISTERED: '등록 완료',
   PENDING: '보류',
-  SCHEDULED: '방문예정',
+  SCHEDULED: '등록 예정',
   LOST: '이탈',
   NO_SHOW: '미방문/노쇼',
 }

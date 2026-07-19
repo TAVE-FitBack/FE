@@ -4,7 +4,6 @@ import { ContactCard } from './ContactCard'
 interface FollowUpBoardProps {
   columns: FollowUpBoardColumn[]
   onMarkReplied: (followUpId: string) => void
-  onMarkSent: (messageTemplateId: string) => void
   onOpenDetail: (customerId: string, customerStatus: FollowUpBoardItem['customerStatus']) => void
 }
 
@@ -21,12 +20,10 @@ function MoreDotsIcon() {
 function BoardColumn({
   column,
   onMarkReplied,
-  onMarkSent,
   onOpenDetail,
 }: {
   column: FollowUpBoardColumn
   onMarkReplied: (followUpId: string) => void
-  onMarkSent: (messageTemplateId: string) => void
   onOpenDetail: (customerId: string, customerStatus: FollowUpBoardItem['customerStatus']) => void
 }) {
   return (
@@ -44,24 +41,18 @@ function BoardColumn({
       <div className="flex flex-col gap-3 px-4 pb-5">
         {column.items.length === 0 && <span className="px-2 text-caption-3 text-gray-600">대상자가 없습니다</span>}
         {column.items.map((c) => (
-          <ContactCard key={c.followUpId} contact={c} onMarkReplied={onMarkReplied} onMarkSent={onMarkSent} onOpenDetail={onOpenDetail} />
+          <ContactCard key={c.followUpId} contact={c} onMarkReplied={onMarkReplied} onOpenDetail={onOpenDetail} />
         ))}
       </div>
     </div>
   )
 }
 
-export function FollowUpBoard({ columns, onMarkReplied, onMarkSent, onOpenDetail }: FollowUpBoardProps) {
+export function FollowUpBoard({ columns, onMarkReplied, onOpenDetail }: FollowUpBoardProps) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row">
       {columns.map((column) => (
-        <BoardColumn
-          key={column.contactRound}
-          column={column}
-          onMarkReplied={onMarkReplied}
-          onMarkSent={onMarkSent}
-          onOpenDetail={onOpenDetail}
-        />
+        <BoardColumn key={column.contactRound} column={column} onMarkReplied={onMarkReplied} onOpenDetail={onOpenDetail} />
       ))}
     </div>
   )

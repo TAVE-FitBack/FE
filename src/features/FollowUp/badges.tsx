@@ -1,3 +1,6 @@
+import type { CustomerStatus } from '../../api/customerManagement'
+import { CONSULT_STATUS_LABEL, CONSULT_STATUS_STYLE } from '../Clients/ClientTable'
+
 const TEMPERATURE_STYLE: Record<string, string> = {
   HOT: 'bg-coral/10 text-coral',
   WARM: 'bg-coral-light/20 text-coral-light',
@@ -23,10 +26,12 @@ export function VisitBadge({ label }: { label: string }) {
   )
 }
 
-export function RegistrationStatusBadge({ label }: { label: string }) {
+export function RegistrationStatusBadge({ status }: { status: CustomerStatus }) {
   return (
-    <span className="inline-flex h-7 w-[71px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-lime/30 bg-lime/10 text-caption-2 text-lime">
-      {label}
+    <span
+      className={`inline-flex h-7 w-[71px] shrink-0 items-center justify-center whitespace-nowrap rounded-full border text-caption-2 ${CONSULT_STATUS_STYLE[status]}`}
+    >
+      {CONSULT_STATUS_LABEL[status]}
     </span>
   )
 }

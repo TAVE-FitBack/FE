@@ -279,7 +279,14 @@ export function ConsultationDetailModal({ customerId, initialStatus, onClose, on
               )}
 
               {tab === 'analysis' && showMessagePanel && (
-                <MessageDraftPanel customerId={customerId} followUpId={detail.activeFollowUp?.followUpId ?? null} />
+                <MessageDraftPanel
+                  customerId={customerId}
+                  followUpId={detail.activeFollowUp?.followUpId ?? null}
+                  onSent={() => {
+                    loadDetail()
+                    onUpdated()
+                  }}
+                />
               )}
             </div>
           </>
