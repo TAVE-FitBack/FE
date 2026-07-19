@@ -43,8 +43,11 @@ export interface InquiryConvertToConsultationResponse {
   redirectUrl: string
 }
 
-export function createInquiry(req: InquiryCreateRequest): Promise<InquiryCreateResponse> {
-  return request<InquiryCreateResponse>('/api/inquiries', { method: 'POST', body: req })
+export function createInquiry(req: InquiryCreateRequest, materials: File[] = []): Promise<InquiryCreateResponse> {
+  const formData = new FormData()
+  formData.append('request', new Blob([JSON.stringify(req)], { type: 'application/json' }))
+  materials.forEach((file) => formData.append('materials', file))
+  return request<InquiryCreateResponse>('/api/inquiries', { method: 'POST', body: formData })
 }
 
 export function checkInquiryPreview(req: InquiryCreateRequest): Promise<InquiryCheckPreviewResponse> {

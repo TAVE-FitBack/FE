@@ -4,6 +4,7 @@ import { FilterBar, type ClientFilters } from '../features/Clients/FilterBar'
 import { ClientTable } from '../features/Clients/ClientTable'
 import { NewConsultationModal } from '../features/Clients/NewConsultationModal'
 import { NewInquiryModal } from '../features/Clients/NewInquiryModal'
+import { ConsultationDetailModal } from '../features/ConsultationDetail/ConsultationDetailModal'
 import {
   getCustomerManagementSummary,
   getInquiries,
@@ -16,6 +17,7 @@ import {
   type ConsultationItem,
   type InquiryNewResponse,
   type ConsultationNewResponse,
+  type CustomerStatus,
 } from '../api/customerManagement'
 import { convertInquiryToConsultation, deleteInquiry } from '../api/inquiries'
 import { ApiError } from '../api/client'
@@ -93,6 +95,7 @@ export function ClientsPage() {
   const [page, setPage] = useState(0)
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false)
   const [newEntryKey, setNewEntryKey] = useState(0)
+  const [detailCustomer, setDetailCustomer] = useState<{ id: string; status: CustomerStatus } | null>(null)
   const [refreshToken, setRefreshToken] = useState(0)
 
   const [summary, setSummary] = useState<CustomerManagementSummaryResponse | null>(null)
@@ -255,7 +258,17 @@ export function ClientsPage() {
         inquiryRows={inquiryData?.content ?? []}
         onConvertInquiry={handleConvertInquiry}
         onDeleteInquiry={handleDeleteInquiry}
+        onOpenConsultation={(id, status) => setDetailCustomer({ id, status })}
       />
+
+      {detailCustomer && (
+        <ConsultationDetailModal
+          customerId={detailCustomer.id}
+          initialStatus={detailCustomer.status}
+          onClose={() => setDetailCustomer(null)}
+          onUpdated={bumpRefresh}
+        />
+      )}
 
       <NewConsultationModal
         key={`consult-${newEntryKey}`}

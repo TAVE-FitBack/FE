@@ -50,7 +50,7 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
   const [visitScheduledDate, setVisitScheduledDate] = useState('')
   const [visitScheduledTime, setVisitScheduledTime] = useState('')
   const [memo, setMemo] = useState('')
-  const [attachments, setAttachments] = useState<string[]>([])
+  const [attachments, setAttachments] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [aiCheckResult, setAiCheckResult] = useState<InquiryCheckPreviewResponse | null>(null)
@@ -103,8 +103,9 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
         serviceId,
         userId: counselorId,
         inquiryStatus,
-        inquiredAt: `${inquiryDate}T${inquiryTime}:00`,
-        visitScheduledAt: visitScheduledDate && visitScheduledTime ? `${visitScheduledDate}T${visitScheduledTime}:00` : undefined,
+        inquiredAt: `${inquiryDate}T${inquiryTime}:00+09:00`,
+        visitScheduledAt:
+          visitScheduledDate && visitScheduledTime ? `${visitScheduledDate}T${visitScheduledTime}:00+09:00` : undefined,
         rawText: memo,
       },
     }
@@ -115,11 +116,11 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
 
   function handleFilesSelected(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return
-    setAttachments((prev) => [...prev, ...Array.from(fileList).map((f) => f.name)])
+    setAttachments((prev) => [...prev, ...Array.from(fileList)])
   }
 
-  function removeAttachment(fileName: string) {
-    setAttachments((prev) => prev.filter((f) => f !== fileName))
+  function removeAttachment(file: File) {
+    setAttachments((prev) => prev.filter((f) => f !== file))
   }
 
   async function handleCheck() {
@@ -143,7 +144,7 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
     setSubmitting(true)
     setSubmitError('')
     try {
-      await createInquiry(req)
+      await createInquiry(req, attachments)
       onCreated()
       onClose()
     } catch (err) {
@@ -361,15 +362,15 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
                   >
                     + 상담 자료 첨부
                   </button>
-                  {attachments.map((fileName) => (
+                  {attachments.map((file, index) => (
                     <button
-                      key={fileName}
+                      key={`${file.name}-${index}`}
                       type="button"
-                      onClick={() => removeAttachment(fileName)}
+                      onClick={() => removeAttachment(file)}
                       title="클릭하여 삭제"
                       className="max-w-[180px] truncate rounded-full bg-gray-800 px-6 py-2 text-caption-3 text-gray-100"
                     >
-                      {fileName}
+                      {file.name}
                     </button>
                   ))}
                 </div>

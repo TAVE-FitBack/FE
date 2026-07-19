@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { ClientTab } from '../../pages/ClientsPage'
 import type { ConsultationItem, CustomerStatus, InquiryItem, InquiryStatus, ManagementStage } from '../../api/customerManagement'
@@ -10,6 +10,7 @@ interface ClientTableProps {
   inquiryRows: InquiryItem[]
   onConvertInquiry: (inquiryId: string) => void
   onDeleteInquiry: (inquiryId: string) => void
+  onOpenConsultation: (customerId: string, customerStatus: CustomerStatus) => void
 }
 
 const CONSULT_COL_WIDTHS = [40, 61, 124, 61, 87, 152, undefined, 185, 95, 95, 60, 44]
@@ -25,13 +26,13 @@ function ColGroup({ widths }: { widths: (number | undefined)[] }) {
   )
 }
 
-export function ClientTable({ tab, consultRows, inquiryRows, onConvertInquiry, onDeleteInquiry }: ClientTableProps) {
+export function ClientTable({ tab, consultRows, inquiryRows, onConvertInquiry, onDeleteInquiry, onOpenConsultation }: ClientTableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-700">
       <table className="w-full min-w-[1000px] table-fixed border-collapse text-left">
         <ColGroup widths={tab === 'consult' ? CONSULT_COL_WIDTHS : INQUIRY_COL_WIDTHS} />
         {tab === 'consult' ? (
-          <ConsultTable rows={consultRows} />
+          <ConsultTable rows={consultRows} onOpen={onOpenConsultation} />
         ) : (
           <InquiryTable rows={inquiryRows} onConvert={onConvertInquiry} onDelete={onDeleteInquiry} />
         )}
@@ -44,8 +45,20 @@ function HeaderCell({ children }: { children: ReactNode }) {
   return <th className="truncate px-3 py-2.5 text-caption-3 font-medium text-gray-400">{children}</th>
 }
 
-function Cell({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <td className={`overflow-hidden px-3 py-4 align-middle text-caption-3 text-gray-300 ${className}`}>{children}</td>
+function Cell({
+  children,
+  className = '',
+  onClick,
+}: {
+  children: ReactNode
+  className?: string
+  onClick?: (e: MouseEvent) => void
+}) {
+  return (
+    <td onClick={onClick} className={`overflow-hidden px-3 py-4 align-middle text-caption-3 text-gray-300 ${className}`}>
+      {children}
+    </td>
+  )
 }
 
 function RowCheckbox() {
@@ -180,7 +193,7 @@ function ReasonTags({ reasons }: { reasons: ConsultationItem['nonConversionReaso
   )
 }
 
-const CONSULT_STATUS_LABEL: Record<CustomerStatus, string> = {
+export const CONSULT_STATUS_LABEL: Record<CustomerStatus, string> = {
   REGISTERED: '등록 완료',
   SCHEDULED: '등록 예정',
   PENDING: '보류',
@@ -188,7 +201,7 @@ const CONSULT_STATUS_LABEL: Record<CustomerStatus, string> = {
   LOST: '이탈',
 }
 
-const CONSULT_STATUS_STYLE: Record<CustomerStatus, string> = {
+export const CONSULT_STATUS_STYLE: Record<CustomerStatus, string> = {
   REGISTERED: 'bg-lime/10 border-lime/30 text-lime',
   SCHEDULED: 'bg-blue/10 border-blue/30 text-blue',
   PENDING: 'bg-gray-400/10 border-gray-400/30 text-gray-500',
@@ -215,7 +228,7 @@ function StatusBadge({ label, className, bordered = false }: { label: string; cl
   )
 }
 
-function ConsultTable({ rows }: { rows: ConsultationItem[] }) {
+function ConsultTable({ rows, onOpen }: { rows: ConsultationItem[]; onOpen: (customerId: string, customerStatus: CustomerStatus) => void }) {
   return (
     <>
       <thead>
@@ -238,8 +251,12 @@ function ConsultTable({ rows }: { rows: ConsultationItem[] }) {
       </thead>
       <tbody>
         {rows.map((row) => (
-          <tr key={row.customerId} className="border-b border-gray-800 last:border-b-0 hover:bg-gray-800/40">
-            <Cell>
+          <tr
+            key={row.customerId}
+            onClick={() => onOpen(row.customerId, row.customerStatus)}
+            className="cursor-pointer border-b border-gray-800 last:border-b-0 hover:bg-gray-800/40"
+          >
+            <Cell onClick={(e) => e.stopPropagation()}>
               <RowCheckbox />
             </Cell>
             <Cell className="truncate">{row.name}</Cell>
@@ -262,7 +279,7 @@ function ConsultTable({ rows }: { rows: ConsultationItem[] }) {
             </Cell>
             <Cell className="truncate text-gray-400">{formatDate(row.latestConsultAt)}</Cell>
             <Cell className="truncate text-gray-400">{row.counselorName}</Cell>
-            <Cell>
+            <Cell onClick={(e) => e.stopPropagation()}>
               <MoreMenuButton />
             </Cell>
           </tr>
