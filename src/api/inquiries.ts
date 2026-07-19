@@ -1,5 +1,6 @@
 import { request } from './client'
 import type { Gender, InquiryStatus } from './customerManagement'
+import type { AiCheckPreview } from './aiCheckPreview'
 
 export type PreferredContactChannel = 'SMS' | 'PHONE' | 'KAKAO'
 
@@ -24,6 +25,7 @@ export interface InquiryInfo {
 export interface InquiryCreateRequest {
   customer: CustomerInfo
   inquiry: InquiryInfo
+  aiCheckPreview?: AiCheckPreview
 }
 
 export interface InquiryCreateResponse {
@@ -31,7 +33,7 @@ export interface InquiryCreateResponse {
   redirectUrl: string
 }
 
-export type InquiryCheckPreviewResponse = Record<string, unknown>
+export type InquiryCheckPreviewResponse = AiCheckPreview
 
 export interface InquiryConvertToConsultationResponse {
   customerId: string

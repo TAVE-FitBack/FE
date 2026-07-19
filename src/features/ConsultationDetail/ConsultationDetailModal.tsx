@@ -256,16 +256,7 @@ export function ConsultationDetailModal({ customerId, initialStatus, onClose, on
                   onNextActionRegenerated={loadDetail}
                 />
               )}
-              {tab === 'timeline' && (
-                <ActivityTimelineTab
-                  customerId={customerId}
-                  detail={detail}
-                  onUpdated={() => {
-                    loadDetail()
-                    onUpdated()
-                  }}
-                />
-              )}
+              {tab === 'timeline' && <ActivityTimelineTab detail={detail} />}
               {tab === 'memo' && (
                 <ConsultationMemoTab
                   customerId={customerId}
