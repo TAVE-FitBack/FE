@@ -1,7 +1,6 @@
 import { type ReactNode, useState } from 'react'
 import { Sidebar, type Page } from './Sidebar'
 import { RightSidebar } from './RightSidebar'
-import { Header } from './Header'
 
 export type { Page }
 
@@ -14,6 +13,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ activePage, onNavigate, onLogout, children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-900">
@@ -29,11 +29,15 @@ export function AppLayout({ activePage, onNavigate, onLogout, children }: AppLay
         onNavigate={(page) => { onNavigate(page); setSidebarOpen(false) }}
         isOpen={sidebarOpen}
         onLogout={onLogout}
+        onExpandedChange={setSidebarExpanded}
       />
 
-      <div className="flex min-h-screen lg:ml-[72px]">
+      <div
+        className={`flex min-h-screen transition-[margin] duration-300 ${
+          sidebarExpanded ? 'lg:ml-[196px]' : 'lg:ml-[72px]'
+        }`}
+      >
         <div className="flex min-w-0 flex-1 flex-col">
-          <Header onMenuClick={() => setSidebarOpen((v) => !v)} />
           <main className="flex-1 p-4 lg:p-8">{children}</main>
         </div>
         <RightSidebar />

@@ -8,7 +8,7 @@ import { ApiError } from '../api/client'
 type Step = 'login' | 'signup'
 
 interface LoginPageProps {
-  onLogin: () => void
+  onLogin: (storeId: string) => void
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -36,7 +36,7 @@ function LoginPanel({
   onLogin,
   onGoToSignup,
 }: {
-  onLogin: () => void
+  onLogin: (storeId: string) => void
   onGoToSignup: () => void
 }) {
   const [email, setEmail] = useState('')
@@ -53,8 +53,8 @@ function LoginPanel({
     setSubmitting(true)
     setLoginError('')
     try {
-      await login({ email, password })
-      onLogin()
+      const { user } = await login({ email, password })
+      onLogin(user.storeId)
     } catch (err) {
       setLoginError(err instanceof ApiError ? err.message : '로그인에 실패했습니다.')
     } finally {

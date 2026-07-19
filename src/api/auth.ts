@@ -1,5 +1,5 @@
 import { request } from './client'
-import { clearTokens, getRefreshToken, setTokens } from './token'
+import { clearCurrentUser, clearTokens, getRefreshToken, setCurrentUser, setTokens } from './token'
 
 export interface UserInfo {
   id: string
@@ -65,6 +65,7 @@ export async function login(req: { email: string; password: string }): Promise<L
     auth: false,
   })
   setTokens(data)
+  setCurrentUser(data.user)
   return data
 }
 
@@ -84,5 +85,6 @@ export async function logout(): Promise<void> {
     await request<void>('/api/auth/logout', { method: 'POST' })
   } finally {
     clearTokens()
+    clearCurrentUser()
   }
 }
