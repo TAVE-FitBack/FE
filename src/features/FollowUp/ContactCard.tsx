@@ -4,11 +4,10 @@ import { ReasonTags, TemperatureBadge, VisitBadge } from './badges'
 interface ContactCardProps {
   contact: FollowUpBoardItem
   onMarkReplied: (followUpId: string) => void
-  onMarkSent: (messageTemplateId: string) => void
   onOpenDetail: (customerId: string, customerStatus: FollowUpBoardItem['customerStatus']) => void
 }
 
-function ContactToggle({ deliveryStatus, onSend }: { deliveryStatus: string | null; onSend: () => void }) {
+function ContactToggle({ deliveryStatus, onOpenDetail }: { deliveryStatus: string | null; onOpenDetail: () => void }) {
   if (deliveryStatus === 'SENT') {
     return (
       <span className="flex flex-1 items-center justify-center rounded-full bg-gray-700 py-1.5 text-caption-3 font-medium text-white">
@@ -19,7 +18,7 @@ function ContactToggle({ deliveryStatus, onSend }: { deliveryStatus: string | nu
   return (
     <button
       type="button"
-      onClick={onSend}
+      onClick={onOpenDetail}
       className="flex flex-1 items-center justify-center rounded-full bg-lime py-1.5 text-caption-3 font-medium text-gray-700"
     >
       연락 보내기
@@ -46,12 +45,7 @@ function ReplyToggle({ hasReply, onMarkReplied }: { hasReply: boolean; onMarkRep
   )
 }
 
-export function ContactCard({ contact, onMarkReplied, onMarkSent, onOpenDetail }: ContactCardProps) {
-  function handleSend() {
-    if (contact.latestMessageTemplateId) onMarkSent(contact.latestMessageTemplateId)
-    onOpenDetail(contact.customerId, contact.customerStatus)
-  }
-
+export function ContactCard({ contact, onMarkReplied, onOpenDetail }: ContactCardProps) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl bg-gray-900 p-[18px]">
       <div className="flex flex-col gap-1.5">
@@ -80,7 +74,10 @@ export function ContactCard({ contact, onMarkReplied, onMarkSent, onOpenDetail }
       </div>
 
       <div className="flex items-center gap-3">
-        <ContactToggle deliveryStatus={contact.latestMessageDeliveryStatus} onSend={handleSend} />
+        <ContactToggle
+          deliveryStatus={contact.latestMessageDeliveryStatus}
+          onOpenDetail={() => onOpenDetail(contact.customerId, contact.customerStatus)}
+        />
         <ReplyToggle hasReply={contact.hasReply} onMarkReplied={() => onMarkReplied(contact.followUpId)} />
       </div>
     </div>

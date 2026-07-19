@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import {
   generateMessageDraft,
   getMessageTemplateOptions,
+  markMessageTemplateSent,
   type MessageTemplateOptionsResponse,
   type MessageTone,
   type MessageVersionType,
@@ -40,6 +41,14 @@ function StarIcon() {
   return (
     <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M12 2l2.9 6.9L22 9.6l-5.4 4.8L18.2 22 12 18.1 5.8 22l1.6-7.6L2 9.6l7.1-.7z" />
+    </svg>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <polyline points="20 6 9 17 4 12" />
     </svg>
   )
 }
@@ -112,9 +121,10 @@ function DarkSelectField({
 interface MessageDraftPanelProps {
   customerId: string
   followUpId: string | null
+  onSent?: () => void
 }
 
-export function MessageDraftPanel({ customerId, followUpId }: MessageDraftPanelProps) {
+export function MessageDraftPanel({ customerId, followUpId, onSent }: MessageDraftPanelProps) {
   const [options, setOptions] = useState<MessageTemplateOptionsResponse | null>(null)
   const [optionsError, setOptionsError] = useState('')
 
@@ -125,7 +135,11 @@ export function MessageDraftPanel({ customerId, followUpId }: MessageDraftPanelP
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState('')
   const [draft, setDraft] = useState('')
+  const [messageTemplateId, setMessageTemplateId] = useState('')
   const [copied, setCopied] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
 
   useEffect(() => {
     getMessageTemplateOptions(customerId)
@@ -157,6 +171,9 @@ export function MessageDraftPanel({ customerId, followUpId }: MessageDraftPanelP
         additionalInstruction: additionalInstruction.trim() || undefined,
       })
       setDraft(res.content)
+      setMessageTemplateId(res.messageTemplateId)
+      setSent(res.deliveryStatus === 'SENT')
+      setSendError('')
     } catch (err) {
       setError(err instanceof ApiError ? err.message : '메시지 생성에 실패했습니다.')
     } finally {
@@ -168,6 +185,21 @@ export function MessageDraftPanel({ customerId, followUpId }: MessageDraftPanelP
     await navigator.clipboard.writeText(draft)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
+  }
+
+  async function handleMarkSent() {
+    if (!messageTemplateId || sending || sent) return
+    setSending(true)
+    setSendError('')
+    try {
+      await markMessageTemplateSent(messageTemplateId)
+      setSent(true)
+      onSent?.()
+    } catch (err) {
+      setSendError(err instanceof ApiError ? err.message : '전송 완료 처리에 실패했습니다.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -246,6 +278,20 @@ export function MessageDraftPanel({ customerId, followUpId }: MessageDraftPanelP
             >
               <CopyIcon />
               {copied ? '복사됨' : '복사하기'}
+            </button>
+          </div>
+          <div className="px-6 pb-6">
+            {sendError && <p className="pb-2 text-caption-3 text-error">{sendError}</p>}
+            <button
+              type="button"
+              onClick={handleMarkSent}
+              disabled={sending || sent}
+              className={`flex h-[37px] w-full items-center justify-center gap-2 rounded-full text-button-3 font-medium ${
+                !sending && !sent ? 'bg-lime text-gray-800' : 'cursor-not-allowed bg-gray-700 text-gray-500'
+              }`}
+            >
+              <CheckIcon />
+              전송 완료
             </button>
           </div>
         </>

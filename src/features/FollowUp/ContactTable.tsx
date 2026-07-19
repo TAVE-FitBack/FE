@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { FollowUpEndedItem } from '../../api/followUps'
-import { CUSTOMER_STATUS_LABEL, GENDER_SHORT } from './data'
+import { GENDER_SHORT } from './data'
 import { ReasonTags, RegistrationStatusBadge } from './badges'
 
 interface ContactTableProps {
@@ -139,7 +139,7 @@ export function ContactTable({ contacts }: ContactTableProps) {
                 <ReasonTags reasons={c.nonConversionReasons.map((r) => r.reasonType)} />
               </Cell>
               <Cell>
-                <RegistrationStatusBadge label={CUSTOMER_STATUS_LABEL[c.customerStatus]} />
+                <RegistrationStatusBadge status={c.customerStatus} />
               </Cell>
               <Cell className="truncate text-gray-400">-</Cell>
               <Cell className="truncate text-gray-400">-</Cell>
