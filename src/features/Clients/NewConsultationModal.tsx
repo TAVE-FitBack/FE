@@ -59,7 +59,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
   const [serviceId, setServiceId] = useState('')
   const [inflowPathId, setInflowPathId] = useState('')
   const [counselorId, setCounselorId] = useState('')
-  const [status, setStatus] = useState<CustomerStatus>('PENDING')
+  const [status, setStatus] = useState<CustomerStatus | ''>('')
   const [memo, setMemo] = useState('')
   const [attachments, setAttachments] = useState<File[]>([])
   const [attachmentError, setAttachmentError] = useState('')
@@ -133,6 +133,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
       inflowPathId === '' ||
       serviceId === '' ||
       counselorId === '' ||
+      status === '' ||
       visitDate === '' ||
       visitTime === '' ||
       memo.trim() === ''
@@ -229,7 +230,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-      <div className="relative flex h-[844px] max-h-[calc(100vh-48px)] w-[1304px] max-w-[calc(100vw-48px)] flex-col overflow-y-auto rounded-[30px] bg-gray-800 p-9">
+      <div className="relative flex h-[844px] max-h-[calc(100vh-48px)] w-[1304px] max-w-[calc(100vw-48px)] flex-col overflow-y-auto rounded-[30px] bg-gray-800 p-9 lg:overflow-hidden">
         <button
           type="button"
           onClick={onClose}
@@ -239,8 +240,8 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
           <CloseIcon />
         </button>
 
-        <div className="flex flex-1 flex-col gap-8 lg:flex-row">
-          <div className="flex w-full flex-col gap-6 lg:w-[327px] lg:shrink-0">
+        <div className="flex flex-1 flex-col gap-8 lg:min-h-0 lg:flex-row">
+          <div className="scrollbar-thin flex w-full flex-col gap-6 lg:w-[327px] lg:min-h-0 lg:shrink-0 lg:overflow-y-auto lg:overflow-x-hidden lg:pr-2">
             <h2 className="text-subtitle-2 font-semibold text-gray-200">기본정보 입력</h2>
 
             <div className="flex flex-col gap-2">
@@ -295,7 +296,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
                     resetCheck()
                   }}
                   placeholder="010-0000-0000"
-                  className="w-[226px] shrink-0 rounded-full border border-gray-700 bg-gray-900 px-[25px] py-[11px] text-body-3 text-white outline-none placeholder:text-gray-600 focus:border-lime"
+                  className="min-w-0 flex-1 rounded-full border border-gray-700 bg-gray-900 px-[25px] py-[11px] text-body-3 text-white outline-none placeholder:text-gray-600 focus:border-lime"
                 />
                 <button
                   type="button"
@@ -494,7 +495,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
                   type="button"
                   disabled={!canCheck || checking}
                   onClick={handleCheck}
-                  className={`mt-auto flex w-fit items-center gap-2 self-center rounded-full px-6 py-2 text-body-3 font-medium ${
+                  className={`mt-auto flex w-fit items-center gap-2 self-end rounded-full px-6 py-2 text-body-3 font-medium ${
                     canCheck && !checking ? 'bg-lime text-gray-800' : 'cursor-not-allowed bg-gray-700 text-gray-500'
                   }`}
                 >
@@ -511,7 +512,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
                 disabled={!canSubmit || submitting}
                 onClick={handleSubmit}
                 className={`flex h-12 items-center justify-center rounded-full px-8 text-button-3 font-medium ${
-                  canSubmit && !submitting ? 'bg-gray-300 text-gray-700' : 'cursor-not-allowed bg-gray-700 text-gray-500'
+                  canSubmit && !submitting ? 'bg-lime text-gray-800' : 'cursor-not-allowed bg-gray-700 text-gray-500'
                 }`}
               >
                 {submitting ? '등록 중...' : '상담 등록하기'}
