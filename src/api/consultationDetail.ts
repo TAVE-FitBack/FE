@@ -1,6 +1,7 @@
 import { request } from './client'
 import type { CustomerInfo } from './inquiries'
 import type { ManagementStage, NonConversionReasonInfo } from './customerManagement'
+import type { AiCheckPreview, AiCheckPreviewKey } from './aiCheckPreview'
 
 // ---- GET /api/customers/{customerId}/detail ----
 
@@ -68,14 +69,116 @@ export type TimelineActivityType =
   | 'MESSAGE_SENT'
   | 'FOLLOW_UP_COMPLETED'
 
+interface TimelineDetailBase {
+  heading: string
+  body: string
+  editable: boolean
+  editTargetType?: string
+  editTargetId?: string
+}
+
+export interface ConsultationTimelineDetail extends TimelineDetailBase {
+  type: 'CONSULTATION'
+  consultationId?: string
+  sessionNo?: number
+  consultedAt?: string
+  consultedServiceId?: string
+  consultedServiceName?: string
+  counselorId?: string
+  counselorName?: string
+  sourceType?: string
+  stage?: string
+}
+
+export interface MessageTemplateTimelineDetail extends TimelineDetailBase {
+  type: 'MESSAGE_TEMPLATE'
+  messageTemplateId?: string
+  followUpId?: string
+  tonePreset?: string
+  versionType?: string
+  deliveryStatus?: string
+  generatedAt?: string
+  sentAt?: string | null
+}
+
+export interface AiAnalysisTimelineDetail extends TimelineDetailBase {
+  type: 'AI_ANALYSIS'
+  consultationId?: string
+  summary?: string
+  leadTemperature?: string
+  temperatureBasis?: string
+  priorityScore?: number
+  primaryReasonType?: string
+  nonConversionReasons?: NonConversionReasonInfo[]
+  nextBestAction?: { title: string; description: string }
+  followUpId?: string
+  status?: string
+  errorCode?: string | null
+}
+
+export interface FollowUpTimelineDetail extends TimelineDetailBase {
+  type: 'FOLLOW_UP'
+  followUpId?: string
+  consultationId?: string
+  recommendContactDate?: string
+  status?: string
+  contactRound?: number
+  memo?: string
+  nextActionTitle?: string
+  nextActionDescription?: string
+  persuasionPoint?: unknown
+  cautionNote?: string
+  actionBasis?: unknown
+}
+
+export interface StatusChangeTimelineDetail extends TimelineDetailBase {
+  type: 'STATUS_CHANGE'
+  beforeStatus?: string
+  afterStatus?: string
+  followUpAction?: string
+}
+
+export interface InquiryConversionTimelineDetail extends TimelineDetailBase {
+  type: 'INQUIRY_CONVERSION'
+  inquiryId?: string
+  customerId?: string
+  consultationId?: string
+  sessionNo?: number
+  newCustomerCreated?: boolean
+}
+
+export type TimelineDetail =
+  | ConsultationTimelineDetail
+  | MessageTemplateTimelineDetail
+  | AiAnalysisTimelineDetail
+  | FollowUpTimelineDetail
+  | StatusChangeTimelineDetail
+  | InquiryConversionTimelineDetail
+
 export interface TimelineItem {
   timelineId: string
   activityType: TimelineActivityType
   title: string
   description: string
+  summary: string
   relatedType: 'CUSTOMER' | 'CONSULTATION' | 'INQUIRY' | 'FOLLOW_UP' | 'MESSAGE_TEMPLATE'
   relatedId: string
+  beforeValue?: Record<string, unknown>
+  afterValue?: Record<string, unknown>
   occurredAt: string
+  detail?: TimelineDetail
+}
+
+export interface ConsultationSignalItem {
+  key: AiCheckPreviewKey
+  label: string
+  confirmed: boolean
+  value?: string
+}
+
+export interface ConsultationSignalSnapshot {
+  consultationId: string
+  items: ConsultationSignalItem[]
 }
 
 export interface CustomerDetailResponse {
@@ -88,6 +191,7 @@ export interface CustomerDetailResponse {
   nextBestAction: NextBestAction | null
   latestMessageTemplate: LatestMessageTemplate | null
   timeline: TimelineItem[]
+  consultationSignalSnapshot?: ConsultationSignalSnapshot
 }
 
 export function getConsultationDetail(customerId: string): Promise<CustomerDetailResponse> {
@@ -116,27 +220,6 @@ export function updateConsultationStatus(
   req: CustomerStatusUpdateRequest,
 ): Promise<CustomerStatusUpdateResponse> {
   return request<CustomerStatusUpdateResponse>(`/api/customers/${customerId}/status`, { method: 'PATCH', body: req })
-}
-
-// ---- PATCH /api/customers/{customerId}/ai-analysis (활동 타임라인 구현 시 연결 예정, 아직 UI 미연결) ----
-
-export interface CustomerAiAnalysisUpdateRequest {
-  summary: string
-  leadTemperature: string
-  temperatureBasis: string
-  nonConversionReasons: NonConversionReasonInfo[]
-}
-
-export interface CustomerAiAnalysisUpdateResponse {
-  customerId: string
-  nextActionRegenerationAvailable: boolean
-}
-
-export function updateAiAnalysis(
-  customerId: string,
-  req: CustomerAiAnalysisUpdateRequest,
-): Promise<CustomerAiAnalysisUpdateResponse> {
-  return request<CustomerAiAnalysisUpdateResponse>(`/api/customers/${customerId}/ai-analysis`, { method: 'PATCH', body: req })
 }
 
 // ---- POST /api/customers/{customerId}/next-action/regenerate ----
@@ -251,16 +334,13 @@ export interface ReconsultationInfo {
   consultedAt: string
   userId: string
   rawText: string
-  visitPurpose?: string
-  experienceNote?: string
-  positiveSignal?: string
-  extraNote?: string
 }
 
 export interface ReconsultationCreateRequest {
   consultation: ReconsultationInfo
   registrationStatus: ReconsultationStatus
   registeredServiceId?: string
+  aiCheckPreview?: AiCheckPreview
 }
 
 export interface ReconsultationCreateResponse {
@@ -274,7 +354,7 @@ export interface ReconsultationCreateResponse {
   aiAnalysisStatus: 'PROCESSING' | 'COMPLETED' | 'FAILED'
 }
 
-export type ReconsultationCheckPreviewResponse = Record<string, unknown>
+export type ReconsultationCheckPreviewResponse = AiCheckPreview
 
 export function checkReconsultationPreview(
   customerId: string,

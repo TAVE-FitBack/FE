@@ -1,6 +1,7 @@
 import { request } from './client'
 import type { CustomerInfo } from './inquiries'
 import type { CustomerStatus } from './customerManagement'
+import type { AiCheckPreview } from './aiCheckPreview'
 
 export interface ConsultationCustomerSearchResponse {
   exists: boolean
@@ -27,6 +28,7 @@ export interface ConsultationInfo {
 export interface ConsultationCreateRequest {
   customer: CustomerInfo
   consultation: ConsultationInfo
+  aiCheckPreview?: AiCheckPreview
 }
 
 export interface ConsultationCreateResponse {
@@ -36,7 +38,7 @@ export interface ConsultationCreateResponse {
   redirectUrl: string
 }
 
-export type ConsultationCheckPreviewResponse = Record<string, unknown>
+export type ConsultationCheckPreviewResponse = AiCheckPreview
 
 export function checkConsultationPreview(req: ConsultationCreateRequest): Promise<ConsultationCheckPreviewResponse> {
   return request<ConsultationCheckPreviewResponse>('/api/consultations/check-preview', { method: 'POST', body: req })

@@ -210,6 +210,8 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
   async function handleSubmit() {
     const req = buildRequest()
     if (!req || !canSubmit || submitting) return
+    // aiCheckPreview를 실어 보내면 서버가 500을 반환함(등록 자체가 막힘) — 백엔드 확인/수정 전까지 전송 비활성화
+    // req.aiCheckPreview = aiCheckResult ?? undefined
     setSubmitting(true)
     setSubmitError('')
     try {
@@ -223,10 +225,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
     }
   }
 
-  const checkedCount = AI_CHECK_ITEMS.filter((item) => {
-    const value = aiCheckResult?.[item]
-    return value !== undefined && value !== null && value !== ''
-  }).length
+  const resultByLabel = new Map((aiCheckResult?.items ?? []).map((item) => [item.label, item]))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
@@ -469,21 +468,21 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
                 <div className="flex items-center justify-between">
                   <h3 className="text-button-2 font-medium text-gray-200">AI가 확인한 정보</h3>
                   <span className="rounded-full bg-lime/10 px-2.5 py-0.5 text-caption-2 text-lime">
-                    확인됨 {checkedCount}/{AI_CHECK_ITEMS.length}
+                    확인됨 {aiCheckResult?.confirmedCount ?? 0}/{aiCheckResult?.totalCount ?? AI_CHECK_ITEMS.length}
                   </span>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  {AI_CHECK_ITEMS.map((item) => {
-                    const value = aiCheckResult?.[item]
-                    const isChecked = value !== undefined && value !== null && value !== ''
+                  {AI_CHECK_ITEMS.map((label) => {
+                    const item = resultByLabel.get(label)
+                    const isChecked = item?.confirmed ?? false
                     return (
-                      <div key={item} className="flex items-start gap-6">
+                      <div key={label} className="flex items-start gap-6">
                         <div className="flex shrink-0 items-center gap-2">
                           <CheckCircleIcon className={isChecked ? 'text-lime' : 'text-gray-600'} />
-                          <span className="whitespace-nowrap text-caption-3 text-gray-500">{item}</span>
+                          <span className="whitespace-nowrap text-caption-3 text-gray-500">{label}</span>
                         </div>
-                        <span className="text-caption-3 text-gray-500">{isChecked ? String(value) : '아직 확인되지 않음'}</span>
+                        <span className="text-caption-3 text-gray-500">{isChecked ? item?.value : '아직 확인되지 않음'}</span>
                       </div>
                     )
                   })}

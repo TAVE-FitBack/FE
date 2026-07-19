@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { regenerateNextAction, type CustomerDetailResponse } from '../../api/consultationDetail'
+import { regenerateNextAction, type ConsultationSignalItem, type CustomerDetailResponse } from '../../api/consultationDetail'
+import type { AiCheckPreviewKey } from '../../api/aiCheckPreview'
 import { ApiError } from '../../api/client'
 
 function SparklesIcon() {
@@ -52,6 +53,49 @@ function toStringList(value: unknown): string[] {
   return [String(value)]
 }
 
+/** 새 AI 상담분석 카드에 표시할 4개 signal key와 라벨 — consultationSignalSnapshot.items 중 이 4개만, 이 순서로 표시
+ *  (서버 응답엔 표시 순서 필드가 없어 Figma 레이아웃 순서를 프론트에서 고정) */
+const SIGNAL_DISPLAY_ORDER: AiCheckPreviewKey[] = ['EXERCISE_GOAL', 'INJURY_HISTORY', 'INTEREST_SERVICE', 'EXERCISE_EXPERIENCE']
+
+const SIGNAL_DISPLAY_LABELS: Partial<Record<AiCheckPreviewKey, string>> = {
+  EXERCISE_GOAL: '운동 목적',
+  INJURY_HISTORY: '부상 경험',
+  INTEREST_SERVICE: '관심 상품',
+  EXERCISE_EXPERIENCE: '운동 경험',
+}
+
+function SignalField({ item }: { item: ConsultationSignalItem }) {
+  const label = SIGNAL_DISPLAY_LABELS[item.key] ?? item.label
+  const value = item.value ?? ''
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="h-px w-full bg-gray-700" />
+      <div className="flex flex-col gap-2">
+        <span className="text-caption-3 font-medium text-gray-400">{label}</span>
+        {item.key === 'EXERCISE_GOAL' ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {value
+              .split(/[,/]/)
+              .map((tag) => tag.trim())
+              .filter(Boolean)
+              .map((tag, i) => (
+                <span
+                  key={i}
+                  className="rounded-full border border-gray-700 bg-gray-900 px-[17px] py-[5px] text-caption-3 font-medium text-white"
+                >
+                  {tag}
+                </span>
+              ))}
+          </div>
+        ) : (
+          <p className="text-body-3 text-gray-200">{value}</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 interface AiAnalysisTabProps {
   customerId: string
   detail: CustomerDetailResponse
@@ -79,6 +123,9 @@ export function AiAnalysisTab({ customerId, detail, showMessagePanel, onNextActi
 
   const mainConcerns = detail.nonConversionReasons
   const persuasionPoints = toStringList(detail.nextBestAction?.persuasionPoint)
+  const signalItems = (detail.consultationSignalSnapshot?.items ?? [])
+    .filter((item) => item.key in SIGNAL_DISPLAY_LABELS)
+    .sort((a, b) => SIGNAL_DISPLAY_ORDER.indexOf(a.key) - SIGNAL_DISPLAY_ORDER.indexOf(b.key))
 
   const card = (
     <div
@@ -176,14 +223,28 @@ export function AiAnalysisTab({ customerId, detail, showMessagePanel, onNextActi
     </div>
   )
 
-  if (showMessagePanel) return card
+  if (showMessagePanel) {
+    if (signalItems.length === 0) return card
+    return (
+      <div className="flex flex-col gap-8">
+        {card}
+        <div className="grid w-[642px] grid-cols-2 gap-x-4 gap-y-8">
+          {signalItems.map((item) => (
+            <SignalField key={item.key} item={item} />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-w-0 flex-1 gap-6">
       {card}
-      {/* 운동목적/부상경험/관심상품/운동경험 블록이 있던 자리 — 필드는 제거했지만
-          레이아웃(카드 너비/여백)은 디자인과 동일하게 유지하기 위해 빈 칼럼을 남겨둠 */}
-      <div className="w-[310px] shrink-0" />
+      <div className="flex w-[310px] shrink-0 flex-col gap-8">
+        {signalItems.map((item) => (
+          <SignalField key={item.key} item={item} />
+        ))}
+      </div>
     </div>
   )
 }

@@ -1,20 +1,10 @@
 import { useState } from 'react'
-import type { CustomerDetailResponse, TimelineItem } from '../../api/consultationDetail'
-import { AiAnalysisEditModal } from './AiAnalysisEditModal'
+import type { CustomerDetailResponse, TimelineDetail, TimelineItem } from '../../api/consultationDetail'
 
 function ChevronIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <polyline points="9 6 15 12 9 18" />
-    </svg>
-  )
-}
-
-function PencilIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z" />
     </svg>
   )
 }
@@ -29,6 +19,46 @@ const NO_PREVIEW_BOX_TYPES = new Set([
 
 function formatOccurredAt(iso: string): string {
   return `${iso.slice(0, 10)} ${iso.slice(11, 16)}`
+}
+
+/** 타입별 상세 패널 부가 메타 정보 — 값이 없는 필드는 자동으로 숨김 */
+function getDetailMeta(detail: TimelineDetail): { label: string; value: string }[] {
+  const rows: { label: string; value: string | undefined | null }[] = (() => {
+    switch (detail.type) {
+      case 'CONSULTATION':
+        return [
+          { label: '담당자', value: detail.counselorName },
+          { label: '서비스', value: detail.consultedServiceName },
+          { label: '회차', value: detail.sessionNo !== undefined ? `${detail.sessionNo}회차` : undefined },
+        ]
+      case 'MESSAGE_TEMPLATE':
+        return [
+          { label: '톤', value: detail.tonePreset },
+          { label: '버전', value: detail.versionType },
+          { label: '전송 상태', value: detail.deliveryStatus },
+          { label: '전송 일시', value: detail.sentAt ?? undefined },
+        ]
+      case 'AI_ANALYSIS':
+        return [
+          { label: '고객 온도', value: detail.leadTemperature },
+          { label: '우선순위 점수', value: detail.priorityScore !== undefined ? String(detail.priorityScore) : undefined },
+          { label: '상태', value: detail.status },
+        ]
+      case 'FOLLOW_UP':
+        return [
+          { label: '추천 연락일', value: detail.recommendContactDate },
+          { label: '상태', value: detail.status },
+          { label: '연락 회차', value: detail.contactRound !== undefined ? `${detail.contactRound}차` : undefined },
+        ]
+      case 'STATUS_CHANGE':
+        return [{ label: '상태 변경', value: detail.beforeStatus && detail.afterStatus ? `${detail.beforeStatus} → ${detail.afterStatus}` : undefined }]
+      case 'INQUIRY_CONVERSION':
+        return [{ label: '신규 고객 생성', value: detail.newCustomerCreated !== undefined ? (detail.newCustomerCreated ? '예' : '아니오') : undefined }]
+      default:
+        return []
+    }
+  })()
+  return rows.filter((row): row is { label: string; value: string } => Boolean(row.value))
 }
 
 function TimelineRow({
@@ -69,13 +99,13 @@ function TimelineRow({
           </button>
         </div>
 
-        {item.description &&
+        {(item.summary || item.description) &&
           (showBox ? (
             <div className="rounded-lg bg-gray-900 px-4 py-2 text-caption-3 text-gray-400">
-              <p className="line-clamp-2 whitespace-pre-wrap">{item.description}</p>
+              <p className="line-clamp-2 whitespace-pre-wrap">{item.summary || item.description}</p>
             </div>
           ) : (
-            <p className="text-caption-3 text-lime">{item.description}</p>
+            <p className="text-caption-3 text-lime">{item.summary || item.description}</p>
           ))}
       </div>
     </div>
@@ -83,15 +113,12 @@ function TimelineRow({
 }
 
 interface ActivityTimelineTabProps {
-  customerId: string
   detail: CustomerDetailResponse
-  onUpdated: () => void
 }
 
-export function ActivityTimelineTab({ customerId, detail, onUpdated }: ActivityTimelineTabProps) {
+export function ActivityTimelineTab({ detail }: ActivityTimelineTabProps) {
   const sorted = [...detail.timeline].sort((a, b) => (a.occurredAt < b.occurredAt ? 1 : -1))
   const [selectedId, setSelectedId] = useState<string | null>(sorted[0]?.timelineId ?? null)
-  const [editOpen, setEditOpen] = useState(false)
   const selected = sorted.find((t) => t.timelineId === selectedId) ?? null
 
   if (sorted.length === 0) {
@@ -122,45 +149,26 @@ export function ActivityTimelineTab({ customerId, detail, onUpdated }: ActivityT
         {selected ? (
           <>
             <div className="flex flex-col gap-1">
-              <h4 className="text-subtitle-2 font-semibold text-gray-300">{selected.title}</h4>
+              <h4 className="text-subtitle-2 font-semibold text-gray-300">{selected.detail?.heading || selected.title}</h4>
               <span className="text-caption-2 text-gray-500">{formatOccurredAt(selected.occurredAt)}</span>
             </div>
+            {selected.detail && getDetailMeta(selected.detail).length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {getDetailMeta(selected.detail).map((row) => (
+                  <span key={row.label} className="rounded-full border border-gray-700 bg-gray-900 px-3 py-1 text-caption-3 text-gray-300">
+                    {row.label}: {row.value}
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="flex-1 whitespace-pre-wrap rounded-[24px] border border-gray-700 bg-gray-900/40 p-6 text-body-3 text-gray-100">
-              {selected.description || '내용이 없습니다.'}
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setEditOpen(true)}
-                className="flex h-[38px] items-center gap-2 rounded-full border border-gray-700 bg-gray-900 px-4 text-caption-3 font-medium text-gray-400"
-              >
-                <PencilIcon />
-                수정하기
-              </button>
+              {selected.detail?.body || selected.description || '내용이 없습니다.'}
             </div>
           </>
         ) : (
           <p className="text-body-3 text-gray-500">항목을 선택하면 상세 내용을 볼 수 있어요.</p>
         )}
       </div>
-
-      {editOpen && (
-        <AiAnalysisEditModal
-          customerId={customerId}
-          initialSummary={detail.latestConsultation?.summary ?? ''}
-          initialLeadTemperature={detail.aiInsight?.leadTemperature ?? ''}
-          initialTemperatureBasis={detail.aiInsight?.temperatureBasis ?? ''}
-          nonConversionReasons={detail.nonConversionReasons}
-          onClose={() => {
-            setEditOpen(false)
-            onUpdated()
-          }}
-          onSaved={() => {
-            setEditOpen(false)
-            onUpdated()
-          }}
-        />
-      )}
     </div>
   )
 }
