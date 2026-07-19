@@ -7,7 +7,8 @@ import { FollowUpPage } from './pages/FollowUpPage'
 import { AnalyticsPage } from './pages/AnalyticsPage'
 import { StoreSetupFlow } from './features/Store/StoreSetupFlow'
 import { logout } from './api/auth'
-import { useEmailVerifyCallback, EmailVerifyCallbackScreen } from './features/Auth/EmailVerifyCallback'
+import { EmailVerifyCallbackScreen } from './features/Auth/EmailVerifyCallback'
+import { useEmailVerifyCallback } from './features/Auth/useEmailVerifyCallback'
 
 function renderPage(page: Page) {
   switch (page) {
@@ -34,7 +35,7 @@ const SKIP_AUTH = import.meta.env.DEV && import.meta.env.VITE_SKIP_AUTH === 'tru
 function App() {
   const [authState, setAuthState] = useState<AuthState>(SKIP_AUTH ? { status: 'loggedIn' } : { status: 'loggedOut' })
   const [activePage, setActivePage] = useState<Page>(SKIP_AUTH ? 'scheduler' : 'clients')
-  const emailVerifyStatus = useEmailVerifyCallback()
+  const { status: emailVerifyStatus, token: emailVerifyToken } = useEmailVerifyCallback()
 
   function handleLogin(storeId: string) {
     setAuthState(storeId ? { status: 'loggedIn' } : { status: 'needsStoreSetup' })
@@ -45,7 +46,7 @@ function App() {
   }
 
   if (emailVerifyStatus !== 'idle') {
-    return <EmailVerifyCallbackScreen status={emailVerifyStatus} />
+    return <EmailVerifyCallbackScreen status={emailVerifyStatus} token={emailVerifyToken} />
   }
 
   if (authState.status === 'loggedOut') {
