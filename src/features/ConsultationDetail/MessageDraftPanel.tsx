@@ -145,7 +145,7 @@ export function MessageDraftPanel({ customerId, followUpId }: MessageDraftPanelP
   const canGenerate = followUpId !== null && tone !== '' && versionType !== ''
 
   async function handleGenerate() {
-    if (!canGenerate || !followUpId || tone === '' || versionType === '' || generating) return
+    if (!canGenerate || !followUpId || generating) return
     setGenerating(true)
     setError('')
     try {

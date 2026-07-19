@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { updateAiAnalysis, type NonConversionReasonInfo } from '../../api/consultationDetail'
+import { updateAiAnalysis } from '../../api/consultationDetail'
+import type { NonConversionReasonInfo } from '../../api/customerManagement'
 import { ApiError } from '../../api/client'
 import { CloseIcon, FieldLabel } from '../Clients/registrationFormControls'
 
