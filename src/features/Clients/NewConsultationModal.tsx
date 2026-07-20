@@ -210,8 +210,7 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
   async function handleSubmit() {
     const req = buildRequest()
     if (!req || !canSubmit || submitting) return
-    // aiCheckPreview를 실어 보내면 서버가 500을 반환함(등록 자체가 막힘) — 백엔드 확인/수정 전까지 전송 비활성화
-    // req.aiCheckPreview = aiCheckResult ?? undefined
+    req.aiCheckPreview = aiCheckResult ?? undefined
     setSubmitting(true)
     setSubmitError('')
     try {
