@@ -1,7 +1,7 @@
 import { request } from './client'
 import type { CustomerStatus, Gender, NonConversionReasonInfo } from './customerManagement'
 
-export type FollowUpStatus = 'PENDING' | 'COMPLETED' | 'CLOSED' | 'SUPERSEDED'
+export type FollowUpStatus = 'PENDING' | 'SENT' | 'COMPLETED' | 'CLOSED' | 'SUPERSEDED'
 export type FollowUpBoardTab = 'TODAY' | 'SCHEDULED'
 export type FollowUpEndedStatus = 'COMPLETED' | 'CLOSED'
 

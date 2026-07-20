@@ -26,7 +26,7 @@ export interface AiInsight {
   analyzedAt: string
 }
 
-export type FollowUpStatus = 'PENDING' | 'COMPLETED' | 'CLOSED' | 'SUPERSEDED'
+export type FollowUpStatus = 'PENDING' | 'SENT' | 'COMPLETED' | 'CLOSED' | 'SUPERSEDED'
 
 export interface ActiveFollowUp {
   followUpId: string
