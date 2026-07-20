@@ -29,6 +29,7 @@ interface NewConsultationModalProps {
   open: boolean
   onClose: () => void
   onCreated: () => void
+  onNavigateToCustomer: (customerId: string) => void
   filterOptions: ConsultationNewResponse | null
 }
 
@@ -48,7 +49,7 @@ const CONTACT_CHANNEL_OPTIONS: { value: PreferredContactChannel; label: string }
 const MAX_ATTACHMENTS = 3
 const MAX_ATTACHMENT_SIZE = 1024 * 1024
 
-export function NewConsultationModal({ open, onClose, onCreated, filterOptions }: NewConsultationModalProps) {
+export function NewConsultationModal({ open, onClose, onCreated, onNavigateToCustomer, filterOptions }: NewConsultationModalProps) {
   const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [gender, setGender] = useState<Gender | ''>('')
@@ -116,7 +117,11 @@ export function NewConsultationModal({ open, onClose, onCreated, filterOptions }
   }
 
   function handleGoToConsultation() {
-    if (redirectUrl) window.location.href = redirectUrl
+    // redirectUrl은 "/customers/{customerId}/detail" 형태의 경로 문자열 — 이 앱은 라우터가 없는
+    // 상태 기반 SPA라 window.location.href로 이동하면 새로고침되어 로그인 세션이 끊기므로,
+    // customerId만 뽑아 상위 컴포넌트가 상세 모달을 열도록 콜백으로 넘긴다.
+    const customerId = redirectUrl?.match(/\/customers\/([^/]+)\/detail/)?.[1]
+    if (customerId) onNavigateToCustomer(customerId)
   }
 
   const services = filterOptions?.services ?? []
