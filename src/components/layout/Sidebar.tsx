@@ -4,22 +4,17 @@ import {
   icChartSelected,
   icCommentIdle,
   icCommentSelected,
-  icHomeIdle,
-  icHomeSelected,
   icMessageIdle,
   icMessageSelected,
-  icNoteIdle,
-  icNoteSelected,
   icScheduleIdle,
   icScheduleSelected,
   icSettingsSelected,
-  icProfileSelected,
   icLogoutSelected,
 } from '../../assets/icons'
 import logoUrl from '../../assets/logo/store_header_logo.png'
 import logoIconUrl from '../../assets/logo/store-logo-icon.png'
 
-export type Page = 'home' | 'scheduler' | 'clients' | 'followup' | 'analytics' | 'tasks'
+export type Page = 'scheduler' | 'clients' | 'followup' | 'analytics'
 
 interface SidebarProps {
   activePage: Page
@@ -30,12 +25,10 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS: { page: Page; idle: string; selected: string; label: string }[] = [
-  { page: 'home',      idle: icHomeIdle,     selected: icHomeSelected,     label: '홈' },
   { page: 'scheduler', idle: icScheduleIdle, selected: icScheduleSelected, label: '스케줄러' },
   { page: 'clients',   idle: icCommentIdle,  selected: icCommentSelected,  label: '상담고객관리' },
   { page: 'followup',  idle: icMessageIdle,  selected: icMessageSelected,  label: '후속 연락 관리' },
   { page: 'analytics', idle: icChartIdle,    selected: icChartSelected,    label: '분석리포트' },
-  { page: 'tasks',     idle: icNoteIdle,     selected: icNoteSelected,     label: '할일목록' },
 ]
 
 export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout, onExpandedChange }: SidebarProps) {
@@ -104,17 +97,6 @@ export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout, onEx
           <img src={icSettingsSelected} alt="" aria-hidden className="h-5 w-5 shrink-0 brightness-0 invert" />
           {expanded && <span className="whitespace-nowrap text-caption-1">설정</span>}
         </button>
-
-        {/* Profile */}
-        <div className={`flex items-center gap-3 px-4 py-2 ${expanded ? 'justify-start' : 'justify-center'}`}>
-          <img src={icProfileSelected} alt="" aria-hidden className="h-5 w-5 shrink-0 brightness-0 invert" />
-          {expanded && (
-            <div className="flex flex-col gap-0.5">
-              <span className="whitespace-nowrap text-caption-2 font-medium text-gray-400">관리자</span>
-              <span className="whitespace-nowrap font-en text-caption-2 leading-none text-gray-400">Sales Admin</span>
-            </div>
-          )}
-        </div>
 
         {/* 로그아웃 */}
         <button
