@@ -14,11 +14,12 @@ const BUSINESS_NUMBER_PATTERN = /^\d{3}-\d{2}-\d{5}$/
 interface BasicInfoStepProps {
   nickname: string
   initial: BasicInfo
+  locked?: boolean
   onBack: () => void
   onNext: (info: BasicInfo) => void
 }
 
-export function BasicInfoStep({ nickname, initial, onBack, onNext }: BasicInfoStepProps) {
+export function BasicInfoStep({ nickname, initial, locked = false, onBack, onNext }: BasicInfoStepProps) {
   const [name, setName] = useState(initial.name)
   const [region, setRegion] = useState(initial.region)
   const [phone, setPhone] = useState(initial.phone)
@@ -44,17 +45,23 @@ export function BasicInfoStep({ nickname, initial, onBack, onNext }: BasicInfoSt
             <label className="text-caption-3 text-gray-100">
               매장명<span className="text-lime">*</span>
             </label>
-            <Input placeholder="예) 핏백" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} />
+            <Input
+              placeholder="예) 핏백"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={100}
+              disabled={locked}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-caption-3 text-gray-100">지역</label>
-            <Input placeholder="지역을 입력하세요." value={region} onChange={(e) => setRegion(e.target.value)} />
+            <Input placeholder="지역을 입력하세요." value={region} onChange={(e) => setRegion(e.target.value)} disabled={locked} />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-caption-3 text-gray-100">매장 전화번호</label>
-            <Input type="tel" placeholder="010-" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Input type="tel" placeholder="010-" value={phone} onChange={(e) => setPhone(e.target.value)} disabled={locked} />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -63,6 +70,7 @@ export function BasicInfoStep({ nickname, initial, onBack, onNext }: BasicInfoSt
               placeholder="사업자 번호를 입력하세요"
               value={businessNumber}
               onChange={(e) => setBusinessNumber(e.target.value)}
+              disabled={locked}
             />
             {businessNumberInvalid && (
               <p className="pl-2 text-caption-3 leading-none text-error">000-00-00000 형식으로 입력해주세요</p>
@@ -71,9 +79,15 @@ export function BasicInfoStep({ nickname, initial, onBack, onNext }: BasicInfoSt
         </div>
 
         <p className="text-center text-caption-3 text-gray-500">
-          입력하신 정보는 서비스 이용 시 매장 정보로 활용됩니다.
-          <br />
-          정확한 정보를 입력해 주세요.
+          {locked
+            ? '매장 업종을 선택해 매장이 이미 생성되어 이 정보는 더 이상 수정할 수 없습니다.'
+            : (
+              <>
+                입력하신 정보는 서비스 이용 시 매장 정보로 활용됩니다.
+                <br />
+                정확한 정보를 입력해 주세요.
+              </>
+            )}
         </p>
       </div>
     </StoreSetupLayout>

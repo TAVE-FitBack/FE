@@ -10,7 +10,7 @@ export function Input({ type = 'text', className = '', ...props }: InputProps) {
     <div className={`relative w-full ${className}`}>
       <input
         type={isPassword && showPassword ? 'text' : type}
-        className={`w-full rounded-full border border-white/10 bg-white/5 px-[25px] pb-[18px] pt-[17px] text-body-3 text-gray-100 outline-none transition-colors placeholder:text-gray-500 focus:border-lime disabled:opacity-40 ${isPassword ? 'pr-[54px]' : ''}`}
+        className={`w-full rounded-full border border-white/10 bg-white/5 px-[25px] pb-[18px] pt-[17px] text-body-3 text-gray-100 outline-none transition-colors placeholder:text-gray-500 focus:border-lime disabled:cursor-not-allowed disabled:opacity-40 ${isPassword ? 'pr-[54px]' : ''}`}
         {...props}
       />
       {isPassword && (

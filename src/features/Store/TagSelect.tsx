@@ -8,6 +8,7 @@ interface TagSelectProps {
   allowCustom?: boolean
   otherPlaceholder?: string
   pendingValue?: string
+  disabled?: boolean
 }
 
 export function TagSelect({
@@ -18,6 +19,7 @@ export function TagSelect({
   allowCustom = true,
   otherPlaceholder = '기타 : (입력 후 ENTER 시 항목 생성)',
   pendingValue,
+  disabled = false,
 }: TagSelectProps) {
   const [otherInput, setOtherInput] = useState('')
 
@@ -25,7 +27,7 @@ export function TagSelect({
     if (e.key !== 'Enter') return
     e.preventDefault()
     const value = otherInput.trim()
-    if (!value || pendingValue) return
+    if (!value || pendingValue || disabled) return
     if (options.includes(value)) {
       if (!selected.includes(value)) onToggle(value)
     } else {
@@ -45,7 +47,7 @@ export function TagSelect({
               key={option}
               type="button"
               onClick={() => onToggle(option)}
-              disabled={Boolean(pendingValue) && !isPending}
+              disabled={disabled || (Boolean(pendingValue) && !isPending)}
               className={`flex h-[52px] items-center gap-3 rounded-full border px-[17px] text-caption-2 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                 isSelected
                   ? 'border-lime bg-lime/10 text-lime'
@@ -66,7 +68,7 @@ export function TagSelect({
           onChange={(e) => setOtherInput(e.target.value)}
           onKeyDown={handleOtherKeyDown}
           placeholder={otherPlaceholder}
-          disabled={Boolean(pendingValue)}
+          disabled={disabled || Boolean(pendingValue)}
           className="h-[52px] w-full rounded-full border border-gray-600 bg-white/5 px-[17px] text-body-3 text-gray-100 outline-none transition-colors placeholder:text-gray-500 focus:border-lime disabled:opacity-50"
         />
       )}

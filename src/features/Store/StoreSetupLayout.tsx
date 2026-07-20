@@ -29,7 +29,7 @@ export function StoreSetupLayout({
         <span className="text-body-3 text-lime">{nickname}</span>
       </header>
 
-      <main className="mx-auto w-full max-w-[1044px] rounded-[30px] bg-gray-800 px-6 py-12 lg:px-[80px] lg:py-[112px]">
+      <main className="mx-auto w-full max-w-[1044px] rounded-[30px] bg-gray-800 px-6 py-12 lg:px-[24px] lg:py-[112px]">
         {children}
       </main>
 

@@ -71,7 +71,7 @@ function RoleCard({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`flex w-full max-w-[320px] flex-col items-start gap-6 rounded-[24px] border p-8 text-left transition-colors ${
+      className={`flex w-full max-w-[384px] flex-col items-start gap-6 rounded-[24px] border p-8 text-left transition-colors ${
         selected
           ? 'border-lime bg-gray-900'
           : disabled
