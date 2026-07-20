@@ -56,7 +56,7 @@ export function ClientTable({
 
   return (
     <div className="rounded-lg border border-gray-700">
-      <div className="max-h-[640px] overflow-auto">
+      <div className="scrollbar-thin max-h-[640px] overflow-auto">
         <table className="w-full min-w-[1000px] table-fixed border-collapse text-left">
           <ColGroup widths={tab === 'consult' ? CONSULT_COL_WIDTHS : INQUIRY_COL_WIDTHS} />
           {tab === 'consult' ? (

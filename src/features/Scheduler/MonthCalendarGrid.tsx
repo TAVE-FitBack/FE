@@ -109,7 +109,7 @@ export function MonthCalendarGrid({
 
   return (
     <div className="w-full overflow-hidden rounded-3xl border border-gray-700 bg-gray-800">
-      <div ref={scrollRef} onScroll={handleScroll} className="overflow-auto" style={{ maxHeight: HEADER_HEIGHT + VISIBLE_HEIGHT }}>
+      <div ref={scrollRef} onScroll={handleScroll} className="scrollbar-thin overflow-auto" style={{ maxHeight: HEADER_HEIGHT + VISIBLE_HEIGHT }}>
         <div style={{ width: contentWidth }}>
           <div className="sticky top-0 z-20 flex bg-gray-800" style={{ height: HEADER_HEIGHT }}>
             <div className="sticky left-0 z-10 shrink-0 bg-gray-800" style={{ width: LABEL_COL_WIDTH }} />

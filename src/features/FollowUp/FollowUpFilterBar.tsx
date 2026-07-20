@@ -80,7 +80,7 @@ function FilterDropdown<T extends string>({
             style={{ position: 'fixed', top: rect.top, left: rect.left }}
             className="z-[90] w-fit min-w-[86px] rounded-xl border border-gray-700 bg-gray-800 p-3"
           >
-            <div className="flex max-h-72 flex-col overflow-y-auto">
+            <div className="scrollbar-thin flex max-h-72 flex-col overflow-y-auto">
               {options.map((o) => (
                 <button
                   key={o}

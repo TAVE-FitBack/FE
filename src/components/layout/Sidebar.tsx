@@ -68,7 +68,7 @@ export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout, onEx
       </div>
 
       {/* Nav */}
-      <nav className="flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-2">
+      <nav className="scrollbar-thin flex flex-1 flex-col gap-2 overflow-y-auto px-3 py-2">
         {NAV_ITEMS.map(({ page, idle, selected, label }) => {
           const isActive = activePage === page
           return (

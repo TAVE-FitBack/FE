@@ -124,7 +124,7 @@ export function SelectField({
             style={{ position: 'fixed', top: rect.top, left: rect.left, width: rect.width }}
             className="z-[90] rounded-[30px] border border-gray-700 bg-gray-900 p-5 shadow-lg"
           >
-            <div className="flex max-h-60 flex-col overflow-y-auto">
+            <div className="scrollbar-thin flex max-h-60 flex-col overflow-y-auto">
               {options.length === 0 && <span className="px-3 py-2 text-caption-3 text-gray-600">옵션이 없습니다</span>}
               {options.map((o) => (
                 <button
@@ -324,7 +324,7 @@ function TimeDropdownTrigger({ value, onChange }: { value: string; onChange: (va
             ref={menuRef}
             data-popover-portal
             style={{ position: 'fixed', top: rect.top + 4, left: rect.left }}
-            className="z-[90] max-h-60 w-[120px] overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900 p-2 shadow-lg"
+            className="scrollbar-thin z-[90] max-h-60 w-[120px] overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900 p-2 shadow-lg"
           >
             {TIME_OPTIONS.map((t) => (
               <button
