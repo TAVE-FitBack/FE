@@ -353,6 +353,12 @@ export function ClientsPage() {
           bumpRefresh()
         }}
         onCreated={bumpRefresh}
+        onNavigateToCustomer={(id) => {
+          setIsNewEntryOpen(false)
+          // 검색 응답엔 고객 상태가 안 담겨 있어 정확한 상태를 알 수 없음 — 상세 모달 진입 후
+          // 실제 상태로 변경하기 전까지 PENDING으로 임시 표시됨
+          setDetailCustomer({ id, status: 'PENDING' })
+        }}
         filterOptions={consultOptions}
       />
       <NewInquiryModal
