@@ -64,6 +64,8 @@ export function InfoStep({ onNext }: InfoStepProps) {
             onCheck={handleCheckNickname}
             checkDisabled={nickname.length === 0}
             status={nicknameStatus}
+            autoComplete="off"
+            name="nickname"
           />
         </div>
 
@@ -71,9 +73,10 @@ export function InfoStep({ onNext }: InfoStepProps) {
           <label className="text-caption-3 text-gray-100">비밀번호</label>
           <Input
             type="password"
-            placeholder="••••••••"
+            placeholder="8자 이상 입력해주세요"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
           />
         </div>
 
@@ -81,9 +84,10 @@ export function InfoStep({ onNext }: InfoStepProps) {
           <label className="text-caption-3 text-gray-100">비밀번호 확인</label>
           <Input
             type="password"
-            placeholder="••••••••"
+            placeholder="8자 이상 입력해주세요"
             value={passwordConfirm}
             onChange={(e) => setPasswordConfirm(e.target.value)}
+            autoComplete="new-password"
           />
           {passwordMismatch && (
             <p className="pl-2 text-caption-3 leading-none text-error">비밀번호 불일치</p>
