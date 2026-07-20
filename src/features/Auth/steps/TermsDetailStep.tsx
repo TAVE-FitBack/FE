@@ -1,4 +1,4 @@
-import headerLogoUrl from '../../../assets/logo/header_logo.png'
+import headerLogoUrl from '../../../assets/logo/store_header_logo.png'
 
 interface TermsDetailStepProps {
   onBack: () => void

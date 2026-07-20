@@ -16,8 +16,8 @@ import {
   icProfileSelected,
   icLogoutSelected,
 } from '../../assets/icons'
-import logoUrl from '../../assets/logo/header_logo.png'
-import logoIconUrl from '../../assets/logo/logo-icon.png'
+import logoUrl from '../../assets/logo/store_header_logo.png'
+import logoIconUrl from '../../assets/logo/store-logo-icon.png'
 
 export type Page = 'home' | 'scheduler' | 'clients' | 'followup' | 'analytics' | 'tasks'
 
