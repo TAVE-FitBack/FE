@@ -73,24 +73,7 @@ function SignalField({ item }: { item: ConsultationSignalItem }) {
       <div className="h-px w-full bg-gray-700" />
       <div className="flex flex-col gap-2">
         <span className="text-caption-3 font-medium text-gray-400">{label}</span>
-        {item.key === 'EXERCISE_GOAL' ? (
-          <div className="flex flex-wrap items-center gap-2">
-            {value
-              .split(/[,/]/)
-              .map((tag) => tag.trim())
-              .filter(Boolean)
-              .map((tag, i) => (
-                <span
-                  key={i}
-                  className="rounded-full border border-gray-700 bg-gray-900 px-[17px] py-[5px] text-caption-3 font-medium text-white"
-                >
-                  {tag}
-                </span>
-              ))}
-          </div>
-        ) : (
-          <p className="text-body-3 text-gray-200">{value}</p>
-        )}
+        <p className="text-body-3 text-gray-200">{value}</p>
       </div>
     </div>
   )
