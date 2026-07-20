@@ -12,6 +12,9 @@ import {
   icNoteSelected,
   icScheduleIdle,
   icScheduleSelected,
+  icSettingsSelected,
+  icProfileSelected,
+  icLogoutSelected,
 } from '../../assets/icons'
 import logoUrl from '../../assets/logo/header_logo.png'
 import logoIconUrl from '../../assets/logo/logo-icon.png'
@@ -98,13 +101,13 @@ export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout, onEx
             expanded ? 'justify-start' : 'justify-center'
           }`}
         >
-          <span className="h-5 w-5 shrink-0" />
+          <img src={icSettingsSelected} alt="" aria-hidden className="h-5 w-5 shrink-0 brightness-0 invert" />
           {expanded && <span className="whitespace-nowrap text-caption-1">설정</span>}
         </button>
 
         {/* Profile */}
         <div className={`flex items-center gap-3 px-4 py-2 ${expanded ? 'justify-start' : 'justify-center'}`}>
-          <span className="h-5 w-5 shrink-0" />
+          <img src={icProfileSelected} alt="" aria-hidden className="h-5 w-5 shrink-0 brightness-0 invert" />
           {expanded && (
             <div className="flex flex-col gap-0.5">
               <span className="whitespace-nowrap text-caption-2 font-medium text-gray-400">관리자</span>
@@ -123,7 +126,7 @@ export function Sidebar({ activePage, onNavigate, isOpen = false, onLogout, onEx
             expanded ? 'justify-start' : 'justify-center'
           }`}
         >
-          <span className="h-5 w-5 shrink-0" />
+          <img src={icLogoutSelected} alt="" aria-hidden className="h-5 w-5 shrink-0 brightness-0 invert" />
           {expanded && <span className="whitespace-nowrap text-caption-1 font-medium">로그아웃</span>}
         </button>
       </div>

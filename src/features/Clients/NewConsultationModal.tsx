@@ -345,9 +345,7 @@ export function NewConsultationModal({ open, onClose, onCreated, onNavigateToCus
               />
             </div>
 
-            <div className="h-px w-full bg-gray-700" />
-
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 border-t border-gray-700 pt-6">
               <FieldLabel>방문 시간</FieldLabel>
               <DateTimeField
                 date={visitDate}

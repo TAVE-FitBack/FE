@@ -239,9 +239,7 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
               />
             </div>
 
-            <div className="h-px w-full bg-gray-700" />
-
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 border-t border-gray-700 pt-6">
               <FieldLabel>문의 시간</FieldLabel>
               <DateTimeField
                 date={inquiryDate}
