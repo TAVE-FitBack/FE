@@ -18,16 +18,16 @@ const BAR_GRADIENT: Record<ConversionRate['color'], string> = {
 export function ConversionRateCard({ rates }: ConversionRateCardProps) {
   return (
     <div className="flex h-full flex-col gap-5 rounded-[28px] border border-gray-700 bg-gray-800 p-6">
-      <h3 className="text-body-2 text-gray-200">종목별 등록 전환율</h3>
+      <h3 className="truncate text-body-2 text-gray-200">종목별 등록 전환율</h3>
       <div className="flex flex-col gap-[38px]">
         {rates.map(({ key, label, percent, color }) => (
           <div key={key} className="relative h-9 w-full overflow-hidden rounded-full bg-black/30">
             <div
-              className={`flex h-full items-center justify-between rounded-full px-5 text-white ${BAR_GRADIENT[color]}`}
+              className={`flex h-full min-w-0 items-center justify-between gap-2 rounded-full px-5 text-white ${BAR_GRADIENT[color]}`}
               style={{ width: `${percent}%` }}
             >
-              <span className="text-caption-2 font-bold">{label}</span>
-              <span className="text-button-1 font-semibold">{percent}%</span>
+              <span className="truncate text-caption-2 font-bold">{label}</span>
+              <span className="shrink-0 text-button-1 font-semibold">{percent}%</span>
             </div>
           </div>
         ))}
