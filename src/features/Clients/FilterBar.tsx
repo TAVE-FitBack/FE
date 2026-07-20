@@ -219,7 +219,7 @@ function FilterDropdown<T extends string>({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-10 min-w-[140px] overflow-hidden rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-lg">
+        <div className="absolute left-0 top-[calc(100%+4px)] z-20 min-w-[140px] overflow-hidden rounded-lg border border-gray-700 bg-gray-800 py-1 shadow-lg">
           <button
             type="button"
             onClick={() => select('')}

@@ -12,49 +12,66 @@ export interface ConversionFlowGraphProps {
   finalRegisteredTotal: number
 }
 
-const ROUND_COL_WIDTH = 132
-const ROUND_START_X = 270
-const BOX_W = 123
-const SATELLITE_W = 116
-const COMPACT_H = 39
-const COMPACT_Y = 8
+const BOX_W = 124
+const GAP_W = 30
+const COL_W = BOX_W + GAP_W
+const MAIN_TOP = 8
+const HEADER_H = 40
+const ROW_H = 55
+const ROW_GAP = 5
+const GROUP_BOTTOM = MAIN_TOP + HEADER_H + ROW_H + ROW_GAP + ROW_H + 9
+const SINGLE_TOP = MAIN_TOP + HEADER_H
+const STAIR_STEP = 37
+const FINAL_HEIGHT = 168
 
-function RoundGroupBox({
+function stairTop(i: number) {
+  return GROUP_BOTTOM + Math.max(126 - i * STAIR_STEP, 20)
+}
+
+interface Row {
+  label: string
+  value: string
+  valueColor: string
+}
+
+/** 헤더(제목 + 총건수) + N개의 내용 행으로 이루어진 박스 — 상담/n차 관리/최종등록 박스에 공용으로 사용 */
+function GroupBox({
   title,
-  inProgress,
-  completed,
+  total,
+  rows,
   style,
+  borderColor,
 }: {
   title: string
-  inProgress: number
-  completed: number
+  total: number
+  rows: Row[]
   style: React.CSSProperties
+  borderColor?: string
 }) {
   return (
-    <div className="absolute flex w-[123px] flex-col justify-end gap-[5px]" style={style}>
-      <div className="absolute top-0 flex h-full w-full flex-col items-center gap-[11px] rounded-[14px] bg-gray-800 px-3.5 pt-2">
-        <div className="flex items-center gap-2.5 whitespace-nowrap text-caption-1 text-white">
-          <span>{title}</span>
-          <span> 총 {inProgress + completed}건</span>
-        </div>
+    <div
+      className={`absolute flex w-[132px] flex-col gap-[5px] rounded-[14px] bg-gray-800 px-3.5 pt-2 pb-2 ${borderColor ?? ''}`}
+      style={style}
+    >
+      <div className="flex items-center gap-1 whitespace-nowrap text-caption-1 text-white">
+        <span>{title}</span>
+        <span> 총 {total}건</span>
       </div>
-      <div className="relative flex h-[55px] shrink-0 flex-col justify-center rounded-xl bg-gray-700 px-3.5 py-4">
-        <div className="flex items-center gap-3 whitespace-nowrap text-caption-3">
-          <span className="text-gray-400">진행 중</span>
-          <span className="text-lime-light">{inProgress}건</span>
+      {rows.map((row, i) => (
+        <div
+          key={i}
+          className="flex h-[55px] shrink-0 flex-col justify-center rounded-xl bg-gray-700 px-3.5 py-4"
+        >
+          <div className="flex items-center gap-1.5 whitespace-nowrap text-caption-3">
+            <span className="text-gray-400">{row.label}</span>
+            <span className={row.valueColor}>{row.value}</span>
+          </div>
         </div>
-      </div>
-      <div className="relative flex h-[55px] shrink-0 flex-col justify-center rounded-xl bg-gray-700 px-3.5 py-4">
-        <div className="flex items-center gap-3 whitespace-nowrap text-caption-3">
-          <span className="text-gray-400">진행 완료</span>
-          <span className="text-lime">{completed}건</span>
-        </div>
-      </div>
+      ))}
     </div>
   )
 }
 
-/** Figma node 978:9586과 동일한 디자인 — 보더가 있는 컴팩트 단일행 박스 */
 function SingleBox({
   label,
   value,
@@ -73,24 +90,9 @@ function SingleBox({
       className={`absolute flex flex-col justify-center rounded-xl px-3.5 py-4 ${bordered ? 'border border-gray-600 bg-gray-800' : 'bg-gray-700'}`}
       style={style}
     >
-      <div className="flex items-center gap-3 whitespace-nowrap text-caption-3">
+      <div className="flex items-center gap-1.5 whitespace-nowrap text-caption-3">
         <span className="text-white">{label}</span>
         <span className={valueColor}>{value}</span>
-      </div>
-    </div>
-  )
-}
-
-function FinalBox({ registeredTotal, conversionRate, style }: { registeredTotal: number; conversionRate: number; style: React.CSSProperties }) {
-  return (
-    <div className="absolute flex flex-col justify-center gap-2.5 rounded-xl border border-gray-600 bg-gray-800 px-3.5 py-5" style={style}>
-      <div className="flex items-center gap-3 whitespace-nowrap text-caption-3">
-        <span className="text-white">최종 등록</span>
-        <span className="text-blue">{registeredTotal}건</span>
-      </div>
-      <div className="flex items-center gap-3 whitespace-nowrap text-caption-3">
-        <span className="text-white">전체 전환율</span>
-        <span className="text-blue">{conversionRate}%</span>
       </div>
     </div>
   )
@@ -127,112 +129,128 @@ export function ConversionFlowGraph({
 }: ConversionFlowGraphProps) {
   const consultationTotal = immediateRegistered + pendingTotal
   const conversionPool = finalRegisteredTotal + finalNonRegistered
-  const overallConversionRate = conversionPool > 0 ? Math.round((finalRegisteredTotal / conversionPool) * 100) : 0
+  const overallConversionRate =
+    conversionPool > 0 ? Math.round((finalRegisteredTotal / conversionPool) * 100) : 0
 
-  const immediateX = 8 + BOX_W + 9
-  const satelliteX = ROUND_START_X + rounds.length * ROUND_COL_WIDTH
-  const finalX = satelliteX
-  const canvasWidth = finalX + SATELLITE_W + 8
-  const compactMidY = COMPACT_Y + COMPACT_H / 2
+  const consultationX = 0
+  const pendingX = COL_W
+  const roundX = (i: number) => COL_W * (2 + i)
+  const nonRegX = COL_W * (2 + rounds.length)
+  const finalX = nonRegX
+
+  const mainMidY = MAIN_TOP + HEADER_H + ROW_H / 2
+  const stairMidY = (i: number) => stairTop(i) + ROW_H / 2
+  const finalTop = stairTop(rounds.length - 1) - 13
+  const finalMidY = finalTop + FINAL_HEIGHT / 2
+
+  const canvasWidth = finalX + BOX_W + 8
+  const canvasHeight = Math.max(GROUP_BOTTOM, finalTop + FINAL_HEIGHT) + 8
 
   return (
     <div
       className="flex h-full min-w-0 flex-col gap-6 rounded-[30px] border border-gray-700 px-7 py-5"
-      style={{ backgroundImage: 'linear-gradient(35deg, var(--color-gray-800) 38%, var(--color-gray-900) 125%)' }}
+      style={{
+        backgroundImage:
+          'linear-gradient(35deg, var(--color-gray-800) 38%, var(--color-gray-900) 125%)',
+      }}
     >
       <h3 className="truncate text-body-2 text-gray-300">미등록자 후속관리 후 전환 그래프</h3>
 
       <div className="scrollbar-thin relative w-full overflow-x-auto">
-        <div className="relative h-[348px]" style={{ width: canvasWidth }}>
-          <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${canvasWidth} 348`}>
-            {/* 대면상담 -> 등록성사(즉시) */}
-            <Connector points={[[8 + BOX_W, compactMidY], [immediateX, compactMidY]]} />
-            {/* 대면상담 -> 등록보류 */}
+        <div className="relative" style={{ width: canvasWidth, height: canvasHeight }}>
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
+          >
+            {/* 상담 -> 등록보류 -> 1차관리 -> ... -> 마지막관리 -> 미등록 (한 줄 체인) */}
             <Connector
               points={[
-                [8 + BOX_W / 2, COMPACT_Y + COMPACT_H],
-                [8 + BOX_W / 2, 320],
-                [90, 320],
+                [consultationX + BOX_W, mainMidY],
+                [pendingX, mainMidY],
               ]}
             />
-            {/* 등록보류 -> 1차관리 */}
-            <Connector points={[[206, 320], [ROUND_START_X, 320]]} />
+            <Connector
+              points={[
+                [pendingX + BOX_W, mainMidY],
+                [roundX(0), mainMidY],
+              ]}
+            />
+            {rounds.slice(0, -1).map((_, i) => (
+              <Connector
+                key={`chain-${i}`}
+                points={[
+                  [roundX(i) + BOX_W, mainMidY],
+                  [roundX(i + 1), mainMidY],
+                ]}
+              />
+            ))}
+            <Connector
+              points={[
+                [roundX(rounds.length - 1) + BOX_W, mainMidY],
+                [nonRegX, mainMidY],
+              ]}
+            />
 
-            {rounds.map((_, i) => {
-              const x = ROUND_START_X + i * ROUND_COL_WIDTH
-              const satX = ROUND_START_X + (i + 1) * ROUND_COL_WIDTH
-              const isLast = i === rounds.length - 1
-              const satY = isLast ? 229 : 143
-              return (
-                <g key={i}>
-                  {/* 이 차수 진행완료 -> 등록성사(이 차수) satellite (위쪽) */}
+            {rounds.map((_, i) => (
+              <g key={`stair-${i}`}>
+                {/* n차 관리 -> n차 등록전환 (박스 바로 아래로) */}
+                <Connector
+                  points={[
+                    [roundX(i) + BOX_W / 2, GROUP_BOTTOM],
+                    [roundX(i) + BOX_W / 2, stairTop(i)],
+                  ]}
+                />
+                {/* n차 등록전환 -> (n+1)차 등록전환 / 최종등록 (계단식 이월) */}
+                {i < rounds.length - 1 ? (
                   <Connector
                     points={[
-                      [x + BOX_W, 316],
-                      [x + BOX_W + 5, 316],
-                      [x + BOX_W + 5, satY],
-                      [satX, satY],
+                      [roundX(i) + BOX_W, stairMidY(i)],
+                      [roundX(i) + BOX_W + GAP_W / 2, stairMidY(i)],
+                      [roundX(i) + BOX_W + GAP_W / 2, stairMidY(i + 1)],
+                      [roundX(i + 1), stairMidY(i + 1)],
                     ]}
                   />
-                  {/* 이 차수 진행완료 -> 다음 차수(이월), 마지막 차수는 생략 */}
-                  {!isLast && <Connector points={[[x + BOX_W, 300], [satX, 300]]} />}
-                </g>
-              )
-            })}
-
-            {/* 마지막 차수 등록성사 -> 최종등록 (같은 열, 위로) */}
-            <Connector
-              points={[
-                [satelliteX + SATELLITE_W - 20, 229],
-                [satelliteX + SATELLITE_W - 20, 100],
-                [finalX, 100],
-              ]}
-            />
+                ) : (
+                  <Connector
+                    points={[
+                      [roundX(i) + BOX_W, stairMidY(i)],
+                      [roundX(i) + BOX_W + GAP_W / 2, stairMidY(i)],
+                      [roundX(i) + BOX_W + GAP_W / 2, finalMidY],
+                      [finalX, finalMidY],
+                    ]}
+                  />
+                )}
+              </g>
+            ))}
           </svg>
 
           <SingleBox
-            label="대면상담"
-            value={`총 ${consultationTotal}건`}
-            valueColor="text-white"
-            bordered
-            style={{ left: 8, top: COMPACT_Y, width: BOX_W, height: COMPACT_H }}
-          />
-          <SingleBox
-            label="등록성사"
-            value={`${immediateRegistered}건`}
-            valueColor="text-blue"
-            bordered
-            style={{ left: immediateX, top: COMPACT_Y, width: BOX_W, height: COMPACT_H }}
+            label="상담"
+            value={`${consultationTotal}건`}
+            valueColor="text-lime"
+            style={{ left: consultationX, top: SINGLE_TOP, width: BOX_W, height: ROW_H }}
           />
           <SingleBox
             label="등록보류"
             value={`${pendingTotal}건`}
             valueColor="text-coral"
-            style={{ left: 90, top: 293, width: 116, height: 55 }}
+            style={{ left: pendingX, top: SINGLE_TOP, width: BOX_W, height: ROW_H }}
           />
 
           {rounds.map((round, i) => (
-            <RoundGroupBox
+            <GroupBox
               key={round.contactRound}
-              title={`${round.contactRound}차관리`}
-              inProgress={round.pendingCount}
-              completed={round.sentCount}
-              style={{ left: ROUND_START_X + i * ROUND_COL_WIDTH, top: 180, height: 168 }}
-            />
-          ))}
-          {rounds.map((round, i) => (
-            <SingleBox
-              key={`reg-${round.contactRound}`}
-              label="등록성사"
-              value={`${round.registeredCount}건`}
-              valueColor="text-blue"
-              bordered={i < rounds.length - 1}
-              style={{
-                left: ROUND_START_X + (i + 1) * ROUND_COL_WIDTH,
-                top: i < rounds.length - 1 ? 124 : 210,
-                width: SATELLITE_W,
-                height: 39,
-              }}
+              title={`${round.contactRound}차 관리`}
+              total={round.pendingCount + round.sentCount}
+              rows={[
+                {
+                  label: '진행중',
+                  value: `${round.pendingCount}건`,
+                  valueColor: 'text-lime-light',
+                },
+                { label: '진행완료', value: `${round.sentCount}건`, valueColor: 'text-lime' },
+              ]}
+              style={{ left: roundX(i), top: MAIN_TOP }}
             />
           ))}
 
@@ -240,9 +258,30 @@ export function ConversionFlowGraph({
             label="미등록"
             value={`${finalNonRegistered}건`}
             valueColor="text-coral"
-            style={{ left: satelliteX, top: 293, width: SATELLITE_W, height: 55 }}
+            style={{ left: nonRegX, top: SINGLE_TOP, width: BOX_W, height: ROW_H }}
           />
-          <FinalBox registeredTotal={finalRegisteredTotal} conversionRate={overallConversionRate} style={{ left: finalX, top: 49, width: SATELLITE_W, height: 114 }} />
+
+          {rounds.map((round, i) => (
+            <SingleBox
+              key={`stairbox-${round.contactRound}`}
+              label={`${round.contactRound}차 등록전환`}
+              value={`${round.registeredCount}건`}
+              valueColor="text-blue"
+              bordered
+              style={{ left: roundX(i), top: stairTop(i), width: BOX_W, height: ROW_H }}
+            />
+          ))}
+
+          <GroupBox
+            title="최종 등록"
+            total={conversionPool}
+            rows={[
+              { label: '등록 완료', value: `${finalRegisteredTotal}건`, valueColor: 'text-blue' },
+              { label: '등록률', value: `${overallConversionRate}%`, valueColor: 'text-blue' },
+            ]}
+            style={{ left: finalX, top: finalTop, height: FINAL_HEIGHT }}
+            borderColor="border border-lime"
+          />
         </div>
       </div>
     </div>
