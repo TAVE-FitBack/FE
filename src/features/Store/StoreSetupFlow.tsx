@@ -94,5 +94,5 @@ export function StoreSetupFlow({ onComplete }: StoreSetupFlowProps) {
     )
   }
 
-  return <CompleteStep onEnter={() => onComplete(storeId)} />
+  return <CompleteStep nickname={nickname} onEnter={() => onComplete(storeId)} />
 }
