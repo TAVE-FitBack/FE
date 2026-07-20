@@ -92,7 +92,7 @@ function DarkSelectField({
               style={{ position: 'fixed', top: rect.top, left: rect.left, width: rect.width }}
               className="z-[90] rounded-[24px] border border-gray-700 bg-gray-800 p-3 shadow-lg"
             >
-              <div className="flex max-h-60 flex-col overflow-y-auto">
+              <div className="scrollbar-thin flex max-h-60 flex-col overflow-y-auto">
                 {options.length === 0 && <span className="px-3 py-2 text-caption-3 text-gray-600">옵션이 없습니다</span>}
                 {options.map((o) => (
                   <button
@@ -203,7 +203,7 @@ export function MessageDraftPanel({ customerId, followUpId, onSent }: MessageDra
   }
 
   return (
-    <div className="flex w-full max-w-[368px] shrink-0 flex-col overflow-y-auto rounded-bl-[24px] rounded-br-[24px] border border-gray-700 bg-gray-900/40">
+    <div className="scrollbar-thin flex w-full max-w-[368px] shrink-0 flex-col overflow-y-auto rounded-bl-[24px] rounded-br-[24px] border border-gray-700 bg-gray-900/40">
       <div className="flex flex-col gap-4 px-6 pb-3 pt-6">
         <h3 className="text-subtitle-2 font-medium text-gray-300">메시지 초안</h3>
 

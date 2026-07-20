@@ -29,7 +29,7 @@ const SECTIONS: { heading: string; body: string }[] = [
 
 export function TermsDetailStep({ onBack, onAgree }: TermsDetailStepProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-8 lg:py-[132px]">
+    <div className="scrollbar-thin fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 px-4 py-8 lg:py-[132px]">
       <div className="relative flex w-full max-w-[796px] flex-col rounded border border-gray-700 bg-gray-900">
         <button
           type="button"

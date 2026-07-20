@@ -145,7 +145,7 @@ export function ActivityTimelineTab({ detail }: ActivityTimelineTabProps) {
 
       <div className="h-auto w-px shrink-0 bg-gray-700" />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto">
+      <div className="scrollbar-thin flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto">
         {selected ? (
           <>
             <div className="flex flex-col gap-1">

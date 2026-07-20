@@ -100,7 +100,7 @@ export function ConsultationDetailModal({ customerId, initialStatus, onClose, on
     <div className="fixed inset-0 z-50 bg-black/60" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="fixed inset-y-0 right-0 flex w-full max-w-[1072px] flex-col overflow-y-auto rounded-bl-[24px] rounded-tl-[30px] bg-gray-800 p-9"
+        className="scrollbar-thin fixed inset-y-0 right-0 flex w-full max-w-[1072px] flex-col overflow-y-auto rounded-bl-[24px] rounded-tl-[30px] bg-gray-800 p-9"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-body-3 font-medium text-gray-200">상담 상세</h2>

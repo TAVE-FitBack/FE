@@ -142,7 +142,7 @@ export function ConversionFlowGraph({
     >
       <h3 className="truncate text-body-2 text-gray-300">미등록자 후속관리 후 전환 그래프</h3>
 
-      <div className="relative w-full overflow-x-auto">
+      <div className="scrollbar-thin relative w-full overflow-x-auto">
         <div className="relative h-[348px]" style={{ width: canvasWidth }}>
           <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${canvasWidth} 348`}>
             {/* 대면상담 -> 등록성사(즉시) */}

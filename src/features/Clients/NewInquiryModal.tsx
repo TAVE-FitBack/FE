@@ -159,7 +159,7 @@ export function NewInquiryModal({ open, onClose, onCreated, filterOptions }: New
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-      <div className="relative flex h-[844px] max-h-[calc(100vh-48px)] w-[1304px] max-w-[calc(100vw-48px)] flex-col overflow-y-auto rounded-[30px] bg-gray-800 p-9 lg:overflow-hidden">
+      <div className="scrollbar-thin relative flex h-[844px] max-h-[calc(100vh-48px)] w-[1304px] max-w-[calc(100vw-48px)] flex-col overflow-y-auto rounded-[30px] bg-gray-800 p-9 lg:overflow-hidden">
         <button
           type="button"
           onClick={onClose}

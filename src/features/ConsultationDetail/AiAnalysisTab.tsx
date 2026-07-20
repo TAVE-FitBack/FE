@@ -129,7 +129,7 @@ export function AiAnalysisTab({ customerId, detail, showMessagePanel, onNextActi
 
   const card = (
     <div
-      className="flex h-[474px] w-[642px] shrink-0 flex-col gap-4 overflow-y-auto rounded-[30px] border border-gray-700 p-5"
+      className="scrollbar-thin flex h-[474px] w-[642px] shrink-0 flex-col gap-4 overflow-y-auto rounded-[30px] border border-gray-700 p-5"
       style={{ backgroundImage: 'linear-gradient(222deg, var(--color-gray-800) 4%, var(--color-gray-600) 218%)' }}
     >
       <div className="flex items-center justify-between gap-2">

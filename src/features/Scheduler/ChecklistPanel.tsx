@@ -50,7 +50,7 @@ export function ChecklistPanel({ refreshKey }: ChecklistPanelProps) {
         <h3 className="text-subtitle-2 font-semibold text-gray-400">할일 체크리스트</h3>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto pr-2">
+      <div className="scrollbar-thin flex flex-1 flex-col gap-2 overflow-y-auto pr-2">
         <span className="px-2 text-body-3 text-lime">오늘 상담</span>
 
         {loading && <span className="px-2 text-caption-3 text-gray-600">불러오는 중...</span>}

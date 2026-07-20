@@ -87,7 +87,7 @@ function StageIndicator({ stage }: { stage: 1 | 2 | 3 }) {
 
 export function ContactTable({ contacts }: ContactTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-700">
+    <div className="scrollbar-thin overflow-x-auto rounded-lg border border-gray-700">
       <table className="w-full min-w-[1100px] table-fixed border-collapse text-left">
         <ColGroup />
         <thead>
