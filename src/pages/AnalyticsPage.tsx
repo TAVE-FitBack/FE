@@ -1,19 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GaugeCard } from '../features/Analytics/GaugeCard'
-import { ServiceStatusCard } from '../features/Analytics/ServiceStatusCard'
+import { ServiceStatusCard, type ServiceStat } from '../features/Analytics/ServiceStatusCard'
 import { TrendChart } from '../features/Analytics/TrendChart'
-import { MonthlyBreakdownPanel } from '../features/Analytics/MonthlyBreakdownPanel'
-import { ConversionRateCard } from '../features/Analytics/ConversionRateCard'
-import { VisitPathBreakdownCard } from '../features/Analytics/VisitPathBreakdownCard'
-import {
-  CONVERSION_RATES,
-  MONTH_OVER_MONTH_CHANGE,
-  OVERALL_SUMMARY,
-  SEPTEMBER_BREAKDOWN,
-  SERVICE_CONSULT_STATUS,
-  VISIT_PATH_ROWS,
-  type AnalyticsTab,
-} from '../features/Analytics/data'
+import { MonthlyBreakdownPanel, type MonthlyBreakdownRow } from '../features/Analytics/MonthlyBreakdownPanel'
+import { ConversionRateCard, type ConversionRate } from '../features/Analytics/ConversionRateCard'
+import { VisitPathBreakdownCard, type VisitPathRow } from '../features/Analytics/VisitPathBreakdownCard'
+import { getAnalysisReportTotal, type AnalysisReportTotalResponse } from '../api/analysisReport'
+import { getServiceBarColor } from '../features/Analytics/serviceColors'
+import { ApiError } from '../api/client'
+
+type AnalyticsTab = 'all' | 'followup'
 
 const TAB_LABEL: Record<AnalyticsTab, string> = {
   all: '전체',
@@ -21,6 +17,21 @@ const TAB_LABEL: Record<AnalyticsTab, string> = {
 }
 
 const TAB_ORDER: AnalyticsTab[] = ['all', 'followup']
+
+function formatMonth(monthIndex: number): string {
+  const year = 2026 + Math.floor(monthIndex / 12)
+  const month = (monthIndex % 12) + 1
+  return `${year}-${String(month).padStart(2, '0')}`
+}
+
+function currentMonthIndex(): number {
+  const now = new Date()
+  return (now.getFullYear() - 2026) * 12 + now.getMonth()
+}
+
+function monthNumberOf(monthStr: string): number {
+  return Number(monthStr.split('-')[1])
+}
 
 function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
   return (
@@ -59,9 +70,70 @@ function MonthNav({ monthIndex, onChange }: { monthIndex: number; onChange: (nex
   )
 }
 
+/** registrationTrend.series 중 "전체"를 찾음 — 서버가 표시 순서를 안 보장하니 이름으로 찾고, 못 찾으면 첫 번째 시리즈로 폴백 */
+function findTotalSeriesKey(report: AnalysisReportTotalResponse): string {
+  const total = report.registrationTrend.series.find((s) => s.name === '전체')
+  return (total ?? report.registrationTrend.series[0])?.key ?? ''
+}
+
 export function AnalyticsPage() {
-  const [monthIndex, setMonthIndex] = useState(9)
+  const [monthIndex, setMonthIndex] = useState(currentMonthIndex)
   const [tab, setTab] = useState<AnalyticsTab>('all')
+  const [report, setReport] = useState<AnalysisReportTotalResponse | null>(null)
+  const [error, setError] = useState('')
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const month = formatMonth(monthIndex)
+
+  useEffect(() => {
+    getAnalysisReportTotal(month)
+      .then((res) => {
+        setReport(res)
+        setActiveIndex(res.registrationTrend.months.length - 1)
+      })
+      .catch((e: unknown) => setError(e instanceof ApiError ? e.message : '분석 리포트를 불러오지 못했습니다.'))
+  }, [month])
+
+  const totalSeriesKey = report ? findTotalSeriesKey(report) : ''
+  const totalSeries = report?.registrationTrend.series.find((s) => s.key === totalSeriesKey)
+
+  const breakdownRows: MonthlyBreakdownRow[] = report
+    ? report.registrationTrend.series.map((s) => {
+        const point = s.points[activeIndex]
+        return {
+          key: s.key,
+          label: s.key === totalSeriesKey ? `${monthNumberOf(point?.month ?? report.month)}월 전체` : s.name,
+          percent: point?.rate ?? 0,
+          count: point?.registeredCount ?? 0,
+        }
+      })
+    : []
+
+  const momChange =
+    totalSeries && activeIndex > 0 ? totalSeries.points[activeIndex].rate - totalSeries.points[activeIndex - 1].rate : null
+
+  const serviceStats: ServiceStat[] =
+    report?.serviceConsultations.map((s) => ({
+      key: s.serviceId,
+      label: s.serviceName,
+      registered: s.consultedCustomerCount,
+      total: s.totalNewConsultationCount,
+    })) ?? []
+
+  const conversionRates: ConversionRate[] =
+    report?.serviceConsultations.map((s, i) => ({
+      key: s.serviceId,
+      label: s.serviceName,
+      percent: s.consultationRate,
+      color: getServiceBarColor(s.serviceName, i),
+    })) ?? []
+
+  const visitPathRows: VisitPathRow[] =
+    report?.inflowPaths.map((p) => ({
+      label: p.inflowPathName,
+      registeredRate: p.registeredCompositionRate,
+      totalRate: p.newConsultationCompositionRate,
+    })) ?? []
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,30 +158,42 @@ export function AnalyticsPage() {
         ))}
       </div>
 
+      {error && <p className="text-caption-3 text-coral">{error}</p>}
+
       {tab === 'followup' ? (
         <p className="py-16 text-center text-body-3 text-gray-500">후속관리 분석 디자인은 추후 제공될 예정입니다.</p>
+      ) : !report ? (
+        <p className="py-16 text-center text-body-3 text-gray-500">불러오는 중...</p>
       ) : (
         <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[435fr_734fr] lg:items-start">
-            <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 gap-3 lg:grid-cols-[435fr_734fr]">
+            <div className="flex h-full flex-col gap-3">
               <GaugeCard
-                registrationRate={OVERALL_SUMMARY.registrationRate}
-                newConsultationCount={OVERALL_SUMMARY.newConsultationCount}
-                newRegistrationCount={OVERALL_SUMMARY.newRegistrationCount}
-                nonRegisteredCount={OVERALL_SUMMARY.nonRegisteredCount}
+                registrationRate={report.summary.newRegistrationRate}
+                newConsultationCount={report.summary.newConsultationCount}
+                newRegistrationCount={report.summary.newRegistrationCount}
+                nonRegisteredCount={report.summary.nonRegisteredCount}
               />
-              <ServiceStatusCard stats={SERVICE_CONSULT_STATUS} />
+              <div className="flex-1">
+                <ServiceStatusCard stats={serviceStats} />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 rounded-[28px] border border-gray-700 bg-gray-800 p-6 md:grid-cols-[1fr_200px]">
-              <TrendChart />
-              <MonthlyBreakdownPanel rows={SEPTEMBER_BREAKDOWN} momChange={MONTH_OVER_MONTH_CHANGE} />
+            <div className="grid h-full grid-cols-1 gap-3 rounded-[28px] border border-gray-700 bg-gray-800 p-6 md:grid-cols-[1fr_200px]">
+              <TrendChart
+                months={report.registrationTrend.months}
+                series={report.registrationTrend.series}
+                totalSeriesKey={totalSeriesKey}
+                activeIndex={activeIndex}
+                onActiveIndexChange={setActiveIndex}
+              />
+              <MonthlyBreakdownPanel rows={breakdownRows} momChange={momChange} />
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-[435fr_734fr]">
-            <ConversionRateCard rates={CONVERSION_RATES} />
-            <VisitPathBreakdownCard rows={VISIT_PATH_ROWS} />
+            <ConversionRateCard rates={conversionRates} />
+            <VisitPathBreakdownCard rows={visitPathRows} />
           </div>
         </div>
       )}
