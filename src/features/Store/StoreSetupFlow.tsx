@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { getCurrentUser } from '../../api/token'
-import { setupStore } from '../../api/store'
-import { ApiError } from '../../api/client'
+import { setupStore, type StoreType } from '../../api/store'
 import { WelcomeStep } from './steps/WelcomeStep'
 import { RoleSelectStep } from './steps/RoleSelectStep'
 import { BasicInfoStep, type BasicInfo } from './steps/BasicInfoStep'
@@ -24,8 +23,6 @@ export function StoreSetupFlow({ onComplete }: StoreSetupFlowProps) {
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(EMPTY_BASIC_INFO)
   const [operationInfo, setOperationInfo] = useState<OperationInfo>(EMPTY_OPERATION_INFO)
   const [storeId, setStoreId] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState('')
 
   if (step === 'welcome') {
     return <WelcomeStep nickname={nickname} onNext={() => setStep('role')} />
@@ -47,6 +44,7 @@ export function StoreSetupFlow({ onComplete }: StoreSetupFlowProps) {
       <BasicInfoStep
         nickname={nickname}
         initial={basicInfo}
+        locked={Boolean(storeId)}
         onBack={() => setStep('role')}
         onNext={(info) => {
           setBasicInfo(info)
@@ -56,25 +54,21 @@ export function StoreSetupFlow({ onComplete }: StoreSetupFlowProps) {
     )
   }
 
-  async function handleOperationInfoNext(info: OperationInfoSubmission) {
-    setOperationInfo(info)
-    setSubmitting(true)
-    setSubmitError('')
-    try {
-      const res = await setupStore({
-        name: basicInfo.name,
-        storeType: info.storeType,
-        phone: basicInfo.phone || undefined,
-        businessNumber: basicInfo.businessNumber || undefined,
-        address: basicInfo.region || undefined,
-      })
-      setStoreId(res.storeId)
-      setStep('events')
-    } catch (err) {
-      setSubmitError(err instanceof ApiError ? err.message : '매장 설정에 실패했습니다.')
-    } finally {
-      setSubmitting(false)
-    }
+  async function handleSelectStoreType(storeType: StoreType) {
+    const res = await setupStore({
+      name: basicInfo.name,
+      storeType,
+      phone: basicInfo.phone || undefined,
+      businessNumber: basicInfo.businessNumber || undefined,
+      address: basicInfo.region || undefined,
+    })
+    setStoreId(res.storeId)
+    setOperationInfo((prev) => ({ ...prev, storeType }))
+  }
+
+  function handleOperationInfoNext(info: OperationInfoSubmission) {
+    setOperationInfo((prev) => ({ ...prev, services: info.services, inflowPaths: info.inflowPaths }))
+    setStep('events')
   }
 
   if (step === 'operationInfo') {
@@ -82,10 +76,9 @@ export function StoreSetupFlow({ onComplete }: StoreSetupFlowProps) {
       <OperationInfoStep
         nickname={nickname}
         initial={operationInfo}
-        submitting={submitting}
-        submitError={submitError}
         onBack={() => setStep('basicInfo')}
         onNext={handleOperationInfoNext}
+        onSelectStoreType={handleSelectStoreType}
       />
     )
   }

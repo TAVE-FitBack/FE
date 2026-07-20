@@ -16,7 +16,6 @@ export interface OperationInfo {
 }
 
 export interface OperationInfoSubmission {
-  storeType: StoreType
   services: TaggedItem[]
   inflowPaths: TaggedItem[]
 }
@@ -24,10 +23,9 @@ export interface OperationInfoSubmission {
 interface OperationInfoStepProps {
   nickname: string
   initial: OperationInfo
-  submitting: boolean
-  submitError: string
   onBack: () => void
   onNext: (info: OperationInfoSubmission) => void
+  onSelectStoreType: (storeType: StoreType) => Promise<void>
 }
 
 const BUSINESS_TYPE_OPTIONS: { label: string; value: StoreType }[] = [
@@ -46,10 +44,13 @@ const BUSINESS_TYPE_LABELS = BUSINESS_TYPE_OPTIONS.map((o) => o.label)
 const SERVICE_PRESETS = ['헬스권', '스피닝', '골프', 'PT', '요가', '기타']
 const INFLOW_PATH_PRESETS = ['워크인', '전화', '네이버예약', '지인소개', '인스타그램', '네이버톡톡', '기타']
 
-export function OperationInfoStep({ nickname, initial, submitting, submitError, onBack, onNext }: OperationInfoStepProps) {
+export function OperationInfoStep({ nickname, initial, onBack, onNext, onSelectStoreType }: OperationInfoStepProps) {
   const initialBusinessTypeLabel = BUSINESS_TYPE_OPTIONS.find((o) => o.value === initial.storeType)?.label ?? ''
 
   const [businessType, setBusinessType] = useState<string[]>(initialBusinessTypeLabel ? [initialBusinessTypeLabel] : [])
+  const [businessTypePending, setBusinessTypePending] = useState<string | undefined>()
+  const [businessTypeError, setBusinessTypeError] = useState('')
+  const storeCreated = businessType.length > 0
 
   const [serviceOptions, setServiceOptions] = useState<string[]>(() => {
     const custom = initial.services.map((s) => s.name).filter((n) => !SERVICE_PRESETS.includes(n))
@@ -67,8 +68,19 @@ export function OperationInfoStep({ nickname, initial, submitting, submitError, 
   const [inflowPathPending, setInflowPathPending] = useState<string | undefined>()
   const [inflowPathError, setInflowPathError] = useState('')
 
-  function toggleBusinessType(value: string) {
-    setBusinessType((prev) => (prev.includes(value) ? [] : [value]))
+  async function selectBusinessType(label: string) {
+    if (businessTypePending || storeCreated) return
+    const preset = BUSINESS_TYPE_OPTIONS.find((o) => o.label === label)!
+    setBusinessTypePending(label)
+    setBusinessTypeError('')
+    try {
+      await onSelectStoreType(preset.value)
+      setBusinessType([label])
+    } catch (err) {
+      setBusinessTypeError(err instanceof ApiError ? err.message : '매장 생성에 실패했습니다.')
+    } finally {
+      setBusinessTypePending(undefined)
+    }
   }
 
   async function toggleService(name: string) {
@@ -121,21 +133,14 @@ export function OperationInfoStep({ nickname, initial, submitting, submitError, 
     void toggleInflowPath(name)
   }
 
-  const nextDisabled = businessType.length === 0 || services.length === 0 || inflowPaths.length === 0 || submitting
+  const nextDisabled = !storeCreated || services.length === 0 || inflowPaths.length === 0
 
   function handleNext() {
-    const storeType = BUSINESS_TYPE_OPTIONS.find((o) => o.label === businessType[0])!.value
-    onNext({ storeType, services, inflowPaths })
+    onNext({ services, inflowPaths })
   }
 
   return (
-    <StoreSetupLayout
-      nickname={nickname}
-      onBack={onBack}
-      onNext={handleNext}
-      nextDisabled={nextDisabled}
-      nextLabel={submitting ? '설정 중...' : '다음'}
-    >
+    <StoreSetupLayout nickname={nickname} onBack={onBack} onNext={handleNext} nextDisabled={nextDisabled}>
       <div className="mx-auto flex w-full max-w-[680px] flex-col items-center gap-12">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-title-3 font-semibold text-white">업종 및 운영 방식 설정</h2>
@@ -143,32 +148,51 @@ export function OperationInfoStep({ nickname, initial, submitting, submitError, 
         </div>
 
         <div className="flex w-full flex-col gap-6">
-          <Section index="01" title="매장 업종" description="대표 업종을 선택해 주세요.">
-            <TagSelect options={BUSINESS_TYPE_LABELS} selected={businessType} onToggle={toggleBusinessType} allowCustom={false} />
+          <Section index="01" title="매장 업종" description="대표 업종을 선택해 주세요. 선택 시 매장이 바로 생성됩니다." error={businessTypeError}>
+            <TagSelect
+              options={BUSINESS_TYPE_LABELS}
+              selected={businessType}
+              onToggle={selectBusinessType}
+              allowCustom={false}
+              pendingValue={businessTypePending}
+              disabled={storeCreated}
+            />
           </Section>
 
-          <Section index="02" title="제공 서비스" note="(복수 선택)" description="현재 제공하는 서비스를 모두 선택해 주세요." error={serviceError}>
+          <Section
+            index="02"
+            title="제공 서비스"
+            note="(복수 선택)"
+            description={storeCreated ? '현재 제공하는 서비스를 모두 선택해 주세요.' : '먼저 매장 업종을 선택해 주세요.'}
+            error={serviceError}
+          >
             <TagSelect
               options={serviceOptions}
               selected={services.map((s) => s.name)}
               onToggle={toggleService}
               onAddCustom={addCustomService}
               pendingValue={servicePending}
+              disabled={!storeCreated}
             />
           </Section>
 
-          <Section index="03" title="방문 경로 설정" note="(복수 선택)" description="상담 및 체험 예약은 어디에서 접수하나요?" error={inflowPathError}>
+          <Section
+            index="03"
+            title="방문 경로 설정"
+            note="(복수 선택)"
+            description={storeCreated ? '상담 및 체험 예약은 어디에서 접수하나요?' : '먼저 매장 업종을 선택해 주세요.'}
+            error={inflowPathError}
+          >
             <TagSelect
               options={inflowPathOptions}
               selected={inflowPaths.map((p) => p.name)}
               onToggle={toggleInflowPath}
               onAddCustom={addCustomInflowPath}
               pendingValue={inflowPathPending}
+              disabled={!storeCreated}
             />
           </Section>
         </div>
-
-        {submitError && <p className="text-center text-caption-3 leading-none text-error">{submitError}</p>}
       </div>
     </StoreSetupLayout>
   )
