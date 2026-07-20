@@ -1,15 +1,5 @@
 import type { FollowUpSummaryResponse } from '../../api/followUps'
-
-function ListIcon() {
-  return (
-    <svg width="15" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="8" y1="13" x2="16" y2="13" />
-      <line x1="8" y1="17" x2="16" y2="17" />
-    </svg>
-  )
-}
+import { icList } from '../../assets/icons'
 
 interface StatCardProps {
   label: string
@@ -21,7 +11,7 @@ function StatCard({ label, count }: StatCardProps) {
     <div className="flex w-full flex-1 flex-col justify-between gap-6 rounded-[30px] bg-gray-800 p-6">
       <div className="flex w-full items-start justify-between">
         <span className="text-body-3 text-gray-400">{label}</span>
-        <ListIcon />
+        <img src={icList} alt="" aria-hidden className="h-[17px] w-auto" />
       </div>
       <span className="text-subtitle-2 font-semibold text-gray-200">{count}건</span>
     </div>

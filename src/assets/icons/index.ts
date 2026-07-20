@@ -19,6 +19,7 @@ import icLogoutSelected from './ic-logout-selected.png'
 
 // 기타
 import icChecklist from './ic-checklist.png'
+import icList from './ic-list.png'
 
 export {
   icChartIdle,
@@ -37,4 +38,5 @@ export {
   icProfileSelected,
   icLogoutSelected,
   icChecklist,
+  icList,
 }
