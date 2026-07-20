@@ -2,19 +2,7 @@ import { useEffect, useState } from 'react'
 import { getTaskChecklists, updateTaskChecklistDone, type TaskChecklistResponse } from '../../api/taskChecklists'
 import { ApiError } from '../../api/client'
 import { toDateInputValue } from './dateUtils'
-
-function ChecklistIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M9 6h11" />
-      <path d="M9 12h11" />
-      <path d="M9 18h11" />
-      <path d="m4 6 1 1 2-2" />
-      <path d="m4 12 1 1 2-2" />
-      <path d="m4 18 1 1 2-2" />
-    </svg>
-  )
-}
+import { icChecklist } from '../../assets/icons'
 
 interface ChecklistPanelProps {
   /** 부모(SchedulerPage)에서 일정을 추가/수정/삭제할 때마다 값을 바꿔 재조회를 트리거함 */
@@ -46,7 +34,7 @@ export function ChecklistPanel({ refreshKey }: ChecklistPanelProps) {
   return (
     <div className="flex h-[376px] w-full flex-col rounded-3xl border border-gray-700 bg-gray-800 p-[21px]">
       <div className="flex items-center gap-2 pb-[10px]">
-        <ChecklistIcon />
+        <img src={icChecklist} alt="" className="h-5 w-5" />
         <h3 className="text-subtitle-2 font-semibold text-gray-400">할일 체크리스트</h3>
       </div>
 

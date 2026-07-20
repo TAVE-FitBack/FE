@@ -124,9 +124,7 @@ export function MonthCalendarGrid({
                       isToday ? 'bg-lime text-gray-800' : 'text-white hover:bg-white/10'
                     }`}
                   >
-                    {isToday
-                      ? `${WEEKDAY_LABELS[(day.getDay() + 6) % 7]} ${day.getDate()}`
-                      : `${WEEKDAY_LABELS[(day.getDay() + 6) % 7]}${day.getDate()}`}
+                    {`${WEEKDAY_LABELS[(day.getDay() + 6) % 7]} ${day.getDate()}`}
                   </button>
                 </div>
               )
