@@ -132,10 +132,23 @@ export function AiAnalysisTab({ customerId, detail, showMessagePanel, onNextActi
       className="flex h-[474px] w-[642px] shrink-0 flex-col gap-4 overflow-y-auto rounded-[30px] border border-gray-700 p-5"
       style={{ backgroundImage: 'linear-gradient(222deg, var(--color-gray-800) 4%, var(--color-gray-600) 218%)' }}
     >
-      <div className="flex items-center gap-2">
-        <SparklesIcon />
-        <span className="text-button-3 font-medium text-lime">상담 포인트</span>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <SparklesIcon />
+          <span className="text-button-3 font-medium text-lime">상담 포인트</span>
+        </div>
+        <button
+          type="button"
+          onClick={handleRegenerate}
+          disabled={regenerating}
+          className="flex items-center gap-1 text-caption-3 font-medium text-lime hover:text-lime-light disabled:text-gray-500"
+        >
+          <RefreshIcon />
+          {regenerating ? '재생성 중...' : '다시 생성'}
+        </button>
       </div>
+
+      {regenerateError && <p className="text-caption-3 text-error">{regenerateError}</p>}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
@@ -187,22 +200,10 @@ export function AiAnalysisTab({ customerId, detail, showMessagePanel, onNextActi
 
       {detail.nextBestAction && (
         <div className="flex flex-col gap-3 rounded-[20px] bg-white/10 p-5 backdrop-blur-[2px]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BulbIcon />
-              <span className="text-button-3 font-medium text-lime">다음 최적 액션</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleRegenerate}
-              disabled={regenerating}
-              className="flex items-center gap-1 text-caption-3 font-medium text-gray-300 hover:text-white disabled:text-gray-500"
-            >
-              <RefreshIcon />
-              {regenerating ? '재생성 중...' : '재생성'}
-            </button>
+          <div className="flex items-center gap-2">
+            <BulbIcon />
+            <span className="text-button-3 font-medium text-lime">다음 최적 액션</span>
           </div>
-          {regenerateError && <p className="text-caption-3 text-error">{regenerateError}</p>}
           <p className="text-body-3 text-white">
             <span className="font-bold">{detail.nextBestAction.title}</span> : {detail.nextBestAction.description}
           </p>
