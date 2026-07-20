@@ -44,26 +44,26 @@ export function GaugeCard({ registrationRate, newConsultationCount, newRegistrat
             100
           </text>
         </svg>
-        <div className="absolute inset-x-0 top-[68px] flex flex-col items-center gap-1">
-          <span className="text-button-3 text-gray-400">전체 신규 등록률</span>
+        <div className="absolute inset-x-0 top-[68px] flex flex-col items-center gap-1 px-2">
+          <span className="max-w-full truncate text-button-3 text-gray-400">전체 신규 등록률</span>
           <span className="text-title-3 font-semibold text-lime">{registrationRate}%</span>
         </div>
       </div>
 
       <div className="flex w-full items-start gap-6">
-        <div className="flex flex-1 flex-col items-start gap-1">
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
           <span className="text-title-3 font-semibold text-lime">{newConsultationCount}</span>
-          <span className="text-caption-2 text-gray-400">신규 상담 건수</span>
+          <span className="w-full truncate text-caption-2 text-gray-400">신규 상담 건수</span>
         </div>
-        <div className="h-[52px] w-px bg-gray-700" />
-        <div className="flex flex-1 flex-col items-start gap-1">
+        <div className="h-[52px] w-px shrink-0 bg-gray-700" />
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
           <span className="text-title-3 font-semibold text-lime">{newRegistrationCount}</span>
-          <span className="text-caption-2 text-gray-400">신규 등록 수</span>
+          <span className="w-full truncate text-caption-2 text-gray-400">신규 등록 수</span>
         </div>
-        <div className="h-[52px] w-px bg-gray-700" />
-        <div className="flex flex-1 flex-col items-start gap-1">
+        <div className="h-[52px] w-px shrink-0 bg-gray-700" />
+        <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
           <span className="text-title-3 font-semibold text-lime">{nonRegisteredCount}</span>
-          <span className="text-caption-2 text-gray-400">미등록/보류 수</span>
+          <span className="w-full truncate text-caption-2 text-gray-400">미등록/보류 수</span>
         </div>
       </div>
     </div>

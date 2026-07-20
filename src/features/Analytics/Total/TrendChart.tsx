@@ -1,4 +1,4 @@
-import type { RegistrationTrendSeries } from '../../api/analysisReport'
+import type { RegistrationTrendSeries } from '../../../api/analysisReport'
 import { getServiceColor } from './serviceColors'
 
 const CHART_WIDTH = 480
@@ -72,15 +72,15 @@ export function TrendChart({ months, series, totalSeriesKey, activeIndex, onActi
 
   return (
     <div className="flex h-full flex-col justify-between gap-6">
-      <div className="flex flex-col gap-4">
-        <h3 className="text-subtitle-2 font-semibold text-gray-200">6개월 등록 추이</h3>
-        <div className="flex items-center gap-11">
+      <div className="flex min-w-0 flex-col gap-4">
+        <h3 className="truncate text-subtitle-2 font-semibold text-gray-200">6개월 등록 추이</h3>
+        <div className="flex min-w-0 items-center gap-6">
           {seriesPoints.map(({ key, name, color }) => {
             const isTotal = key === totalSeriesKey
             return (
-              <div key={key} className="flex items-center gap-3.5">
-                <span className="h-[9px] w-5" style={{ backgroundColor: color, opacity: isTotal ? 1 : 0.3 }} />
-                <span className={`text-caption-3 ${isTotal ? 'font-medium text-white' : 'text-gray-500'}`}>{name}</span>
+              <div key={key} className="flex min-w-0 shrink items-center gap-3.5">
+                <span className="h-[9px] w-5 shrink-0" style={{ backgroundColor: color, opacity: isTotal ? 1 : 0.3 }} />
+                <span className={`truncate text-caption-3 ${isTotal ? 'font-medium text-white' : 'text-gray-500'}`}>{name}</span>
               </div>
             )
           })}

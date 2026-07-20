@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react'
-import { GaugeCard } from '../features/Analytics/GaugeCard'
-import { ServiceStatusCard, type ServiceStat } from '../features/Analytics/ServiceStatusCard'
-import { TrendChart } from '../features/Analytics/TrendChart'
-import { MonthlyBreakdownPanel, type MonthlyBreakdownRow } from '../features/Analytics/MonthlyBreakdownPanel'
-import { ConversionRateCard, type ConversionRate } from '../features/Analytics/ConversionRateCard'
-import { VisitPathBreakdownCard, type VisitPathRow } from '../features/Analytics/VisitPathBreakdownCard'
-import { getAnalysisReportTotal, type AnalysisReportTotalResponse } from '../api/analysisReport'
-import { getServiceBarColor } from '../features/Analytics/serviceColors'
+import { GaugeCard } from '../features/Analytics/Total/GaugeCard'
+import { ServiceStatusCard, type ServiceStat } from '../features/Analytics/Total/ServiceStatusCard'
+import { TrendChart } from '../features/Analytics/Total/TrendChart'
+import { MonthlyBreakdownPanel, type MonthlyBreakdownRow } from '../features/Analytics/Total/MonthlyBreakdownPanel'
+import { ConversionRateCard, type ConversionRate } from '../features/Analytics/Total/ConversionRateCard'
+import { VisitPathBreakdownCard, type VisitPathRow } from '../features/Analytics/Total/VisitPathBreakdownCard'
+import {
+  getAnalysisReportTotal,
+  getAnalysisReportFollowUp,
+  type AnalysisReportTotalResponse,
+  type AnalysisReportFollowUpResponse,
+} from '../api/analysisReport'
+import { getServiceBarColor } from '../features/Analytics/Total/serviceColors'
+import { FollowUpStatCards } from '../features/Analytics/FollowUp/FollowUpStatCards'
+import { RegistrationChangeCard } from '../features/Analytics/FollowUp/RegistrationChangeCard'
+import { NonConversionReasonsCard } from '../features/Analytics/FollowUp/NonConversionReasonsCard'
+import { AiRecommendationsCard } from '../features/Analytics/FollowUp/AiRecommendationsCard'
+import { ConversionFlowGraph } from '../features/Analytics/FollowUp/ConversionFlowGraph'
 import { ApiError } from '../api/client'
 
 type AnalyticsTab = 'all' | 'followup'
@@ -80,6 +90,7 @@ export function AnalyticsPage() {
   const [monthIndex, setMonthIndex] = useState(currentMonthIndex)
   const [tab, setTab] = useState<AnalyticsTab>('all')
   const [report, setReport] = useState<AnalysisReportTotalResponse | null>(null)
+  const [followUpReport, setFollowUpReport] = useState<AnalysisReportFollowUpResponse | null>(null)
   const [error, setError] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -92,6 +103,12 @@ export function AnalyticsPage() {
         setActiveIndex(res.registrationTrend.months.length - 1)
       })
       .catch((e: unknown) => setError(e instanceof ApiError ? e.message : '분석 리포트를 불러오지 못했습니다.'))
+  }, [month])
+
+  useEffect(() => {
+    getAnalysisReportFollowUp(month)
+      .then(setFollowUpReport)
+      .catch((e: unknown) => setError(e instanceof ApiError ? e.message : '후속관리 분석 리포트를 불러오지 못했습니다.'))
   }, [month])
 
   const totalSeriesKey = report ? findTotalSeriesKey(report) : ''
@@ -161,7 +178,37 @@ export function AnalyticsPage() {
       {error && <p className="text-caption-3 text-coral">{error}</p>}
 
       {tab === 'followup' ? (
-        <p className="py-16 text-center text-body-3 text-gray-500">후속관리 분석 디자인은 추후 제공될 예정입니다.</p>
+        !followUpReport ? (
+          <p className="py-16 text-center text-body-3 text-gray-500">불러오는 중...</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <FollowUpStatCards
+              totalCount={followUpReport.summary.targetCustomerCount}
+              inProgressCount={followUpReport.summary.pendingFollowUpCount}
+              completedCount={followUpReport.summary.completedFollowUpCount}
+              successRate={followUpReport.summary.followUpRegistrationConversionRate}
+            />
+
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[339fr_954fr]">
+              <RegistrationChangeCard
+                beforeRate={followUpReport.registrationChange.beforeRate}
+                currentRate={followUpReport.registrationChange.currentRate}
+              />
+              <ConversionFlowGraph
+                immediateRegistered={followUpReport.conversionGraph.unattributedRegisteredCount}
+                pendingTotal={followUpReport.conversionGraph.initialNonRegisteredCount}
+                rounds={followUpReport.conversionGraph.rounds}
+                finalNonRegistered={followUpReport.conversionGraph.nonRegisteredOrLostCount}
+                finalRegisteredTotal={followUpReport.conversionGraph.finalRegisteredCount}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[600fr_628fr]">
+              <NonConversionReasonsCard reasons={followUpReport.nonConversionReasons} />
+              <AiRecommendationsCard items={followUpReport.aiRecommendations} />
+            </div>
+          </div>
+        )
       ) : !report ? (
         <p className="py-16 text-center text-body-3 text-gray-500">불러오는 중...</p>
       ) : (
