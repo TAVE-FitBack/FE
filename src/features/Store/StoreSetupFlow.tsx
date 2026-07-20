@@ -5,7 +5,7 @@ import { ApiError } from '../../api/client'
 import { WelcomeStep } from './steps/WelcomeStep'
 import { RoleSelectStep } from './steps/RoleSelectStep'
 import { BasicInfoStep, type BasicInfo } from './steps/BasicInfoStep'
-import { OperationInfoStep, type OperationInfo } from './steps/OperationInfoStep'
+import { OperationInfoStep, type OperationInfo, type OperationInfoSubmission } from './steps/OperationInfoStep'
 import { EventsStep } from './steps/EventsStep'
 import { CompleteStep } from './steps/CompleteStep'
 
@@ -56,7 +56,7 @@ export function StoreSetupFlow({ onComplete }: StoreSetupFlowProps) {
     )
   }
 
-  async function handleOperationInfoNext(info: OperationInfo) {
+  async function handleOperationInfoNext(info: OperationInfoSubmission) {
     setOperationInfo(info)
     setSubmitting(true)
     setSubmitError('')

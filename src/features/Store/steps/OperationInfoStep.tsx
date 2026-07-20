@@ -15,13 +15,19 @@ export interface OperationInfo {
   inflowPaths: TaggedItem[]
 }
 
+export interface OperationInfoSubmission {
+  storeType: StoreType
+  services: TaggedItem[]
+  inflowPaths: TaggedItem[]
+}
+
 interface OperationInfoStepProps {
   nickname: string
   initial: OperationInfo
   submitting: boolean
   submitError: string
   onBack: () => void
-  onNext: (info: OperationInfo) => void
+  onNext: (info: OperationInfoSubmission) => void
 }
 
 const BUSINESS_TYPE_OPTIONS: { label: string; value: StoreType }[] = [
