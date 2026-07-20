@@ -21,8 +21,8 @@ export function RoleSelectStep({ nickname, onBack, onNext, onSkip }: RoleSelectS
           <p className="text-body-3 text-white/50">역할에 따라 서비스 이용 환경이 구성됩니다.</p>
         </div>
 
-        <div className="flex flex-col items-center gap-[44px]">
-          <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="flex w-full max-w-[788px] flex-col items-center gap-[44px]">
+          <div className="flex w-full flex-col gap-4 sm:flex-row">
             <RoleCard
               title="사장님 / 관리자"
               description="새로운 매장을 만들고 멤버를 초대합니다."
