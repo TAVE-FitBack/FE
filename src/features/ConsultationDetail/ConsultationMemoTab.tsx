@@ -87,8 +87,7 @@ export function ConsultationMemoTab({ customerId, latestConsultation, currentSta
         {
           consultation,
           registrationStatus: toReconsultationStatus(currentStatus),
-          // aiCheckPreview를 실어 보내면 서버가 500을 반환함(등록 자체가 막힘) — 백엔드 확인/수정 전까지 전송 비활성화
-          // aiCheckPreview: aiCheckResult ?? undefined,
+          aiCheckPreview: aiCheckResult ?? undefined,
         },
         attachments,
       )

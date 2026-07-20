@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StatsSummary } from '../features/Clients/StatsSummary'
 import { FilterBar, type ClientFilters } from '../features/Clients/FilterBar'
 import { ClientTable } from '../features/Clients/ClientTable'
@@ -12,7 +12,6 @@ import {
   getInquiryFilterOptions,
   getConsultationFilterOptions,
   type CustomerManagementSummaryResponse,
-  type PagedResponse,
   type InquiryItem,
   type ConsultationItem,
   type InquiryNewResponse,
@@ -99,11 +98,14 @@ export function ClientsPage() {
   const [refreshToken, setRefreshToken] = useState(0)
 
   const [summary, setSummary] = useState<CustomerManagementSummaryResponse | null>(null)
-  const [consultData, setConsultData] = useState<PagedResponse<ConsultationItem> | null>(null)
-  const [inquiryData, setInquiryData] = useState<PagedResponse<InquiryItem> | null>(null)
+  const [consultRows, setConsultRows] = useState<ConsultationItem[]>([])
+  const [inquiryRows, setInquiryRows] = useState<InquiryItem[]>([])
+  const [hasNext, setHasNext] = useState(false)
+  const [totalElements, setTotalElements] = useState(0)
   const [consultOptions, setConsultOptions] = useState<ConsultationNewResponse | null>(null)
   const [inquiryOptions, setInquiryOptions] = useState<InquiryNewResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const isLoadingMoreRef = useRef(false)
 
   const month = formatMonth(monthIndex)
 
@@ -169,6 +171,10 @@ export function ClientsPage() {
   }, [tab, inquiryOptions])
 
   useEffect(() => {
+    let cancelled = false
+    setPage(0)
+    isLoadingMoreRef.current = false
+
     if (tab === 'consult') {
       getConsultations({
         month,
@@ -180,9 +186,14 @@ export function ClientsPage() {
         status: filters.status,
         leadTemperature: filters.leadTemperature,
         counselorId: filters.counselorId,
-        page,
+        page: 0,
       })
-        .then(setConsultData)
+        .then((res) => {
+          if (cancelled) return
+          setConsultRows(res.content)
+          setHasNext(res.hasNext)
+          setTotalElements(res.totalElements)
+        })
         .catch((e: Error) => setError(e.message))
     } else {
       getInquiries({
@@ -193,14 +204,73 @@ export function ClientsPage() {
         inflowPathId: filters.inflowPathId,
         inquiryStatus: filters.inquiryStatus,
         counselorId: filters.counselorId,
-        page,
+        page: 0,
       })
-        .then(setInquiryData)
+        .then((res) => {
+          if (cancelled) return
+          setInquiryRows(res.content)
+          setHasNext(res.hasNext)
+          setTotalElements(res.totalElements)
+        })
         .catch((e: Error) => setError(e.message))
     }
-  }, [tab, month, filters, page, refreshToken])
 
-  const resultCount = tab === 'consult' ? (consultData?.totalElements ?? 0) : (inquiryData?.totalElements ?? 0)
+    return () => {
+      cancelled = true
+    }
+  }, [tab, month, filters, refreshToken])
+
+  function handleLoadMore() {
+    if (!hasNext || isLoadingMoreRef.current) return
+    isLoadingMoreRef.current = true
+    const nextPage = page + 1
+
+    if (tab === 'consult') {
+      getConsultations({
+        month,
+        keyword: filters.keyword,
+        gender: filters.gender,
+        serviceId: filters.serviceId,
+        inflowPathId: filters.inflowPathId,
+        stage: filters.stage,
+        status: filters.status,
+        leadTemperature: filters.leadTemperature,
+        counselorId: filters.counselorId,
+        page: nextPage,
+      })
+        .then((res) => {
+          setConsultRows((prev) => [...prev, ...res.content])
+          setHasNext(res.hasNext)
+          setPage(nextPage)
+        })
+        .catch((e: Error) => setError(e.message))
+        .finally(() => {
+          isLoadingMoreRef.current = false
+        })
+    } else {
+      getInquiries({
+        month,
+        keyword: filters.keyword,
+        gender: filters.gender,
+        serviceId: filters.serviceId,
+        inflowPathId: filters.inflowPathId,
+        inquiryStatus: filters.inquiryStatus,
+        counselorId: filters.counselorId,
+        page: nextPage,
+      })
+        .then((res) => {
+          setInquiryRows((prev) => [...prev, ...res.content])
+          setHasNext(res.hasNext)
+          setPage(nextPage)
+        })
+        .catch((e: Error) => setError(e.message))
+        .finally(() => {
+          isLoadingMoreRef.current = false
+        })
+    }
+  }
+
+  const resultCount = totalElements
   const filterOptions = tab === 'consult' ? consultOptions : inquiryOptions
 
   return (
@@ -254,11 +324,13 @@ export function ClientsPage() {
 
       <ClientTable
         tab={tab}
-        consultRows={consultData?.content ?? []}
-        inquiryRows={inquiryData?.content ?? []}
+        consultRows={consultRows}
+        inquiryRows={inquiryRows}
         onConvertInquiry={handleConvertInquiry}
         onDeleteInquiry={handleDeleteInquiry}
         onOpenConsultation={(id, status) => setDetailCustomer({ id, status })}
+        hasMore={hasNext}
+        onLoadMore={handleLoadMore}
       />
 
       {detailCustomer && (

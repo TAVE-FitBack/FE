@@ -84,7 +84,11 @@ function MonthNav({ monthIndex, onChange }: { monthIndex: number; onChange: (nex
   )
 }
 
-function filterColumns(columns: FollowUpBoardColumn[], filters: FollowUpFilters): FollowUpBoardColumn[] {
+function filterColumns(
+  columns: FollowUpBoardColumn[],
+  filters: FollowUpFilters,
+  dateRange?: { startDate: string; endDate: string },
+): FollowUpBoardColumn[] {
   return columns.map((col) => ({
     ...col,
     items: col.items.filter((c) => {
@@ -94,6 +98,7 @@ function filterColumns(columns: FollowUpBoardColumn[], filters: FollowUpFilters)
       if (filters.reason && !c.nonConversionReasons.some((r) => r.reasonType === filters.reason)) return false
       if (filters.status && c.customerStatus !== filters.status) return false
       if (filters.temperature && c.leadTemperature !== filters.temperature) return false
+      if (dateRange && (c.recommendContactDate < dateRange.startDate || c.recommendContactDate > dateRange.endDate)) return false
       return true
     }),
   }))
@@ -112,7 +117,7 @@ function filterEndedItems(items: FollowUpEndedItem[], filters: FollowUpFilters):
 
 export function FollowUpPage() {
   const [monthIndex, setMonthIndex] = useState(currentMonthIndex)
-  const [tab, setTab] = useState<FollowUpTab>('upcoming')
+  const [tab, setTab] = useState<FollowUpTab>('today')
   const [filters, setFilters] = useState<FollowUpFilters>({})
   const [refreshToken, setRefreshToken] = useState(0)
 
@@ -155,7 +160,9 @@ export function FollowUpPage() {
     setDetailCustomer({ id: customerId, status: customerStatus })
   }
 
-  const filteredColumns = board ? filterColumns(board.columns, filters) : []
+  const filteredColumns = board
+    ? filterColumns(board.columns, filters, tab === 'upcoming' ? monthDateRange(monthIndex) : undefined)
+    : []
   const filteredEnded = ended ? filterEndedItems(ended.items, filters) : []
 
   const serviceOptions = Array.from(

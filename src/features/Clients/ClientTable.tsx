@@ -1,4 +1,4 @@
-import type { MouseEvent, ReactNode } from 'react'
+import { useEffect, useRef, type MouseEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import type { ClientTab } from '../../pages/ClientsPage'
 import type { ConsultationItem, CustomerStatus, InquiryItem, InquiryStatus, ManagementStage } from '../../api/customerManagement'
@@ -11,6 +11,8 @@ interface ClientTableProps {
   onConvertInquiry: (inquiryId: string) => void
   onDeleteInquiry: (inquiryId: string) => void
   onOpenConsultation: (customerId: string, customerStatus: CustomerStatus) => void
+  hasMore: boolean
+  onLoadMore: () => void
 }
 
 const CONSULT_COL_WIDTHS = [40, 61, 124, 61, 87, 152, undefined, 185, 95, 95, 60, 44]
@@ -26,17 +28,49 @@ function ColGroup({ widths }: { widths: (number | undefined)[] }) {
   )
 }
 
-export function ClientTable({ tab, consultRows, inquiryRows, onConvertInquiry, onDeleteInquiry, onOpenConsultation }: ClientTableProps) {
+export function ClientTable({
+  tab,
+  consultRows,
+  inquiryRows,
+  onConvertInquiry,
+  onDeleteInquiry,
+  onOpenConsultation,
+  hasMore,
+  onLoadMore,
+}: ClientTableProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!hasMore) return
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) onLoadMore()
+      },
+      { rootMargin: '200px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore, onLoadMore])
+
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-700">
-      <table className="w-full min-w-[1000px] table-fixed border-collapse text-left">
-        <ColGroup widths={tab === 'consult' ? CONSULT_COL_WIDTHS : INQUIRY_COL_WIDTHS} />
-        {tab === 'consult' ? (
-          <ConsultTable rows={consultRows} onOpen={onOpenConsultation} />
-        ) : (
-          <InquiryTable rows={inquiryRows} onConvert={onConvertInquiry} onDelete={onDeleteInquiry} />
+    <div className="rounded-lg border border-gray-700">
+      <div className="max-h-[640px] overflow-auto">
+        <table className="w-full min-w-[1000px] table-fixed border-collapse text-left">
+          <ColGroup widths={tab === 'consult' ? CONSULT_COL_WIDTHS : INQUIRY_COL_WIDTHS} />
+          {tab === 'consult' ? (
+            <ConsultTable rows={consultRows} onOpen={onOpenConsultation} />
+          ) : (
+            <InquiryTable rows={inquiryRows} onConvert={onConvertInquiry} onDelete={onDeleteInquiry} />
+          )}
+        </table>
+        {hasMore && (
+          <div ref={sentinelRef} className="flex items-center justify-center py-4 text-caption-3 text-gray-500">
+            불러오는 중...
+          </div>
         )}
-      </table>
+      </div>
     </div>
   )
 }
@@ -232,7 +266,7 @@ function ConsultTable({ rows, onOpen }: { rows: ConsultationItem[]; onOpen: (cus
   return (
     <>
       <thead>
-        <tr className="border-b border-gray-700 bg-gray-800">
+        <tr className="sticky top-0 z-10 border-b border-gray-700 bg-gray-800">
           <HeaderCell>
             <RowCheckbox />
           </HeaderCell>
@@ -301,7 +335,7 @@ function InquiryTable({
   return (
     <>
       <thead>
-        <tr className="border-b border-gray-700 bg-gray-800">
+        <tr className="sticky top-0 z-10 border-b border-gray-700 bg-gray-800">
           <HeaderCell>
             <RowCheckbox />
           </HeaderCell>
