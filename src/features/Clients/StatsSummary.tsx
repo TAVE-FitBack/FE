@@ -75,9 +75,13 @@ function ItemRatioCard({ summary }: StatsSummaryProps) {
       <h3 className="truncate text-body-3 text-gray-300">종목별 상담 비율</h3>
       <div className="flex flex-1 flex-col justify-center gap-8">
         {rates.length === 0
-          ? EMPTY_BAR_PLACEHOLDERS.map((key) => <div key={key} className="h-9 w-full rounded-full bg-black/30" />)
+          ? EMPTY_BAR_PLACEHOLDERS.map((key) => <div key={key} className="h-9 w-full rounded-full border border-gray-600 bg-white/5" />)
           : rates.map(({ serviceId, serviceName, rate }, index) => (
-              <div key={serviceId} className="relative h-9 w-full overflow-hidden rounded-full bg-black/30">
+              <div
+                key={serviceId}
+                title={`${serviceName} ${rate}%`}
+                className="relative h-9 w-full overflow-hidden rounded-full bg-black/30"
+              >
                 <div
                   className={`flex h-full min-w-0 items-center justify-between gap-2 rounded-full px-5 text-white ${RATIO_BAR_COLORS[index % RATIO_BAR_COLORS.length]}`}
                   style={{ width: `${rate}%` }}
@@ -101,19 +105,27 @@ function VisitPathCard({ summary }: StatsSummaryProps) {
   return (
     <div className="flex h-[307px] flex-1 flex-col gap-5 rounded border border-gray-700 bg-[linear-gradient(48deg,var(--color-gray-800)_38%,var(--color-gray-900)_125%)] px-8 py-5">
       <h3 className="text-body-3 text-gray-300">방문경로</h3>
-      <div className="flex flex-col gap-3">
-        {rates.map(({ inflowPathId, inflowPathName, rate }, index) => (
-          <div key={inflowPathId} className="flex items-center gap-3">
-            <span className="w-14 shrink-0 text-right text-caption-2 text-gray-500">{inflowPathName}</span>
-            <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-gray-700">
-              <div
-                className={`h-full rounded-full bg-lime ${RANK_OPACITY[index] ?? DEFAULT_OPACITY}`}
-                style={{ width: `${rate}%` }}
-              />
-            </div>
-            <span className="w-8 shrink-0 text-right text-caption-2 font-medium text-gray-200">{rate}%</span>
-          </div>
-        ))}
+      <div className="flex flex-1 flex-col justify-center gap-3">
+        {rates.length === 0
+          ? EMPTY_BAR_PLACEHOLDERS.map((key) => (
+              <div key={key} className="flex items-center gap-3">
+                <span className="w-14 shrink-0" />
+                <div className="h-2.5 flex-1 rounded-full bg-gray-700" />
+                <span className="w-8 shrink-0" />
+              </div>
+            ))
+          : rates.map(({ inflowPathId, inflowPathName, rate }, index) => (
+              <div key={inflowPathId} className="flex items-center gap-3">
+                <span className="w-14 shrink-0 text-right text-caption-2 text-gray-500">{inflowPathName}</span>
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-gray-700">
+                  <div
+                    className={`h-full rounded-full bg-lime ${RANK_OPACITY[index] ?? DEFAULT_OPACITY}`}
+                    style={{ width: `${rate}%` }}
+                  />
+                </div>
+                <span className="w-8 shrink-0 text-right text-caption-2 font-medium text-gray-200">{rate}%</span>
+              </div>
+            ))}
       </div>
     </div>
   )

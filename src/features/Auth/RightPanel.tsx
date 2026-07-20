@@ -1,5 +1,5 @@
 import fitnessBg from '../../assets/images/login-bg.jpg'
-import logoFullUrl from '../../assets/logo/logo-full.png'
+import logoFullUrl from '../../assets/logo/store_header_logo.png'
 
 interface RightPanelProps {
   logoSrc?: string

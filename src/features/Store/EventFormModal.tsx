@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import type { EventCreateRequest, EventResponse, EventType } from '../../api/store'
 import { ApiError } from '../../api/client'
 import type { TaggedItem } from './steps/OperationInfoStep'
+import { DatePickerField, SelectField } from '../Clients/registrationFormControls'
 
 const EVENT_TYPE_OPTIONS: { label: string; value: EventType }[] = [
   { label: '할인', value: 'DISCOUNT' },
@@ -63,16 +64,12 @@ export function EventFormModal({ services, initialEvent, onSave, onClose }: Even
           </Field>
 
           <Field label="이벤트 유형" required>
-            <Select value={eventType} onChange={(v) => setEventType(v as EventType)}>
-              <option value="" disabled>
-                선택해 주세요
-              </option>
-              {EVENT_TYPE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
+            <SelectField
+              placeholder="선택해 주세요"
+              value={eventType}
+              options={EVENT_TYPE_OPTIONS}
+              onChange={(v) => setEventType(v as EventType)}
+            />
           </Field>
 
           <Field label="설명">
@@ -90,22 +87,20 @@ export function EventFormModal({ services, initialEvent, onSave, onClose }: Even
           </Field>
 
           <Field label="대상 서비스">
-            <Select value={serviceId} onChange={setServiceId}>
-              <option value="">전체 서비스</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </Select>
+            <SelectField
+              placeholder="전체 서비스"
+              value={serviceId}
+              options={[{ value: '', label: '전체 서비스' }, ...services.map((s) => ({ value: s.id, label: s.name }))]}
+              onChange={setServiceId}
+            />
           </Field>
 
           <div className="flex gap-3">
             <Field label="시작일" required>
-              <TextInput type="date" value={startDate} onChange={setStartDate} />
+              <DatePickerField value={startDate} onChange={setStartDate} />
             </Field>
             <Field label="종료일" required>
-              <TextInput type="date" value={endDate} onChange={setEndDate} />
+              <DatePickerField value={endDate} onChange={setEndDate} />
             </Field>
           </div>
         </div>
@@ -165,25 +160,5 @@ function TextInput({
       placeholder={placeholder}
       className="h-[52px] w-full rounded-full border border-white/10 bg-white/5 px-[17px] text-body-3 text-gray-100 outline-none transition-colors placeholder:text-gray-500 focus:border-lime"
     />
-  )
-}
-
-function Select({
-  value,
-  onChange,
-  children,
-}: {
-  value: string
-  onChange: (value: string) => void
-  children: ReactNode
-}) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="h-[52px] w-full rounded-full border border-white/10 bg-white/5 px-[17px] text-body-3 text-gray-100 outline-none transition-colors focus:border-lime"
-    >
-      {children}
-    </select>
   )
 }

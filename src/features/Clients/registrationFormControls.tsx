@@ -58,14 +58,21 @@ export function useDropdown() {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLDivElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null)
+  const [rect, setRect] = useState<{ left: number; width: number; top?: number; bottom?: number } | null>(null)
 
   useLayoutEffect(() => {
     if (!open) return
     function updateRect() {
       if (!triggerRef.current) return
       const r = triggerRef.current.getBoundingClientRect()
-      setRect({ top: r.bottom + 4, left: r.left, width: r.width })
+      const spaceBelow = window.innerHeight - r.bottom
+      const spaceAbove = r.top
+      const openUpward = spaceBelow < 300 && spaceAbove > spaceBelow
+      setRect(
+        openUpward
+          ? { left: r.left, width: r.width, bottom: window.innerHeight - r.top + 4 }
+          : { left: r.left, width: r.width, top: r.bottom + 4 },
+      )
     }
     updateRect()
     window.addEventListener('scroll', updateRect, true)
@@ -121,7 +128,12 @@ export function SelectField({
           <div
             ref={menuRef}
             data-popover-portal
-            style={{ position: 'fixed', top: rect.top, left: rect.left, width: rect.width }}
+            style={{
+              position: 'fixed',
+              left: rect.left,
+              width: rect.width,
+              ...(rect.top !== undefined ? { top: rect.top } : { bottom: rect.bottom }),
+            }}
             className="z-[90] rounded-[30px] border border-gray-700 bg-gray-900 p-5 shadow-lg"
           >
             <div className="scrollbar-thin flex max-h-60 flex-col overflow-y-auto">
@@ -264,6 +276,55 @@ export function DateField({
   )
 }
 
+/** Full-width pill date field: calendar icon + selected date, opens a portaled calendar panel. */
+export function DatePickerField({
+  value,
+  onChange,
+  placeholder = 'YYYY-MM-DD',
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+}) {
+  const { open, setOpen, triggerRef, menuRef, rect } = useDropdown()
+  const [viewDate, setViewDate] = useState(() => (value ? new Date(value) : new Date()))
+
+  return (
+    <div ref={triggerRef} className="relative w-full">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 rounded-full border border-gray-700 bg-gray-900 px-[25px] py-[11px] text-body-3 outline-none"
+      >
+        <CalendarIcon className="shrink-0 text-gray-500" />
+        <span className={value ? 'text-gray-100' : 'text-gray-600'}>{value || placeholder}</span>
+      </button>
+
+      {open &&
+        rect &&
+        createPortal(
+          <div
+            ref={menuRef}
+            data-popover-portal
+            style={{ position: 'fixed', left: rect.left, ...(rect.top !== undefined ? { top: rect.top } : { bottom: rect.bottom }) }}
+            className="z-[90]"
+          >
+            <CalendarPanel
+              value={value}
+              viewDate={viewDate}
+              onViewDateChange={setViewDate}
+              onSelect={(d) => {
+                onChange(d)
+                setOpen(false)
+              }}
+            />
+          </div>,
+          document.body,
+        )}
+    </div>
+  )
+}
+
 function InlineDateTrigger({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { open, setOpen, triggerRef, menuRef, rect } = useDropdown()
   const [viewDate, setViewDate] = useState(() => (value ? new Date(value) : new Date()))
@@ -281,7 +342,12 @@ function InlineDateTrigger({ value, onChange }: { value: string; onChange: (valu
       {open &&
         rect &&
         createPortal(
-          <div ref={menuRef} data-popover-portal style={{ position: 'fixed', top: rect.top + 4, left: rect.left }} className="z-[90]">
+          <div
+            ref={menuRef}
+            data-popover-portal
+            style={{ position: 'fixed', left: rect.left, ...(rect.top !== undefined ? { top: rect.top } : { bottom: rect.bottom }) }}
+            className="z-[90]"
+          >
             <CalendarPanel
               value={value}
               viewDate={viewDate}
@@ -323,7 +389,7 @@ function TimeDropdownTrigger({ value, onChange }: { value: string; onChange: (va
           <div
             ref={menuRef}
             data-popover-portal
-            style={{ position: 'fixed', top: rect.top + 4, left: rect.left }}
+            style={{ position: 'fixed', left: rect.left, ...(rect.top !== undefined ? { top: rect.top } : { bottom: rect.bottom }) }}
             className="scrollbar-thin z-[90] max-h-60 w-[120px] overflow-y-auto rounded-2xl border border-gray-700 bg-gray-900 p-2 shadow-lg"
           >
             {TIME_OPTIONS.map((t) => (
